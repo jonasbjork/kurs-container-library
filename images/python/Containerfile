@@ -1,0 +1,5 @@
+FROM registry.access.redhat.com/ubi9/python-312:latest
+USER 1001
+WORKDIR /opt/app-root/src
+CMD ["python3", "-c", "import http.server, os; print('Python ready', os.getuid(), flush=True); http.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler, port=8080, bind='0.0.0.0')"]
+EXPOSE 8080

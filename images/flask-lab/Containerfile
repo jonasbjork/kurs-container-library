@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/python-312:latest
+USER 0
+WORKDIR /opt/app
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt && mkdir -p /opt/app && chgrp -R 0 /opt/app && chmod -R g=u /opt/app
+COPY app.py .
+RUN chgrp 0 app.py && chmod g=u app.py
+USER 1001
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+EXPOSE 8080
+CMD ["python3", "app.py"]

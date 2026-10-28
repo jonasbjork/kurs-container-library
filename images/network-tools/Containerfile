@@ -1,0 +1,6 @@
+FROM registry.access.redhat.com/ubi9/ubi:9.6
+USER 0
+# Replace UBI curl-minimal with curl; traceroute is unavailable in UBI repos.
+RUN dnf -y --allowerasing install bash curl bind-utils iproute iputils jq nmap-ncat procps-ng && dnf clean all
+USER 1001
+CMD ["/bin/bash"]

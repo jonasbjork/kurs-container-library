@@ -1,0 +1,18 @@
+FROM registry.access.redhat.com/ubi9/php-83:latest
+USER 0
+WORKDIR /opt/app-root/src
+# SHA256 published by phpmyadmin.net for the release archive.
+RUN curl -fsSL --retry 3 https://files.phpmyadmin.net/phpMyAdmin/5.2.3/phpMyAdmin-5.2.3-all-languages.tar.gz -o /tmp/phpmyadmin.tar.gz && \
+    echo '12ba1c425fa4071abbd4e7668c9ebdeac0b0755a467a6d6d5026122bb47c102b  /tmp/phpmyadmin.tar.gz' | sha256sum -c - && \
+    tar -xzf /tmp/phpmyadmin.tar.gz --strip-components=1 -C /opt/app-root/src && \
+    rm /tmp/phpmyadmin.tar.gz
+COPY config.inc.php /opt/app-root/src/config.inc.php
+COPY start.sh /usr/local/bin/kurs-phpmyadmin
+COPY php.ini /etc/php.d/99-kurs.ini
+COPY php-fpm.conf /etc/php-fpm.d/zz-kurs.conf
+RUN chmod 755 /usr/local/bin/kurs-phpmyadmin && \
+    mkdir -p /opt/app-root/src/tmp && chgrp -R 0 /opt/app-root/src && \
+    chmod -R g=u /opt/app-root/src && php -r 'exit(extension_loaded("mysqli") ? 0 : 1);'
+USER 1001
+EXPOSE 8080
+CMD ["/usr/local/bin/kurs-phpmyadmin"]

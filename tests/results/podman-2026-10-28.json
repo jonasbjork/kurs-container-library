@@ -1,0 +1,114 @@
+{
+  "recorded_at": "2026-10-28T14:48:17.603445+00:00",
+  "scope": "Local linux/amd64 images executed through QEMU on a Linux/arm64 Podman VM",
+  "host": {
+    "arch": "arm64",
+    "os": "linux",
+    "kernel": "7.1.4-200.fc44.aarch64"
+  },
+  "rootless": true,
+  "podman_version": "6.1.0",
+  "uids": [
+    1001230000,
+    1002340000
+  ],
+  "gid": 0,
+  "capabilities": [],
+  "no_new_privileges": true,
+  "automatic_passwd_entry": false,
+  "github_actions_run": "not-run",
+  "okd_status": "not-verified",
+  "published": false,
+  "images": [
+    {
+      "name": "nginx",
+      "version": "1.0",
+      "local_image_id": "023a4bf114b095067b5528f5856676aa9cbb62d60a123eb4527f60f8e6d2455a",
+      "platform": "linux/amd64",
+      "test": "http",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "postgresql",
+      "version": "1.0",
+      "local_image_id": "50942bb928c7919d691b79cacb3ce6330625b57ad86c517f2cb4e16a2a058b0f",
+      "platform": "linux/amd64",
+      "test": "postgres",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "python",
+      "version": "1.0",
+      "local_image_id": "cd4f15b407d829fb53c5d70ca791f2dc9fc37ac467a256bc2720e1744bad5fcc",
+      "platform": "linux/amd64",
+      "test": "python",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "network-tools",
+      "version": "1.0",
+      "local_image_id": "0db4c80bfca5d615a727fa71648f1b3e0ddf664c8843f692c9fc0160eb218260",
+      "platform": "linux/amd64",
+      "test": "tools",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "flask-lab",
+      "version": "1.0",
+      "local_image_id": "c0da3f4d792c9d8043923e2486a7b9e74031efd248cc6b5510204356ed16e4d3",
+      "platform": "linux/amd64",
+      "test": "http",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "mysql",
+      "version": "1.0",
+      "local_image_id": "80b5f0604977d117cec54b5c40482bd11e3bf7e165a004a6ef1685bc1cf82bca",
+      "platform": "linux/amd64",
+      "test": "mysql",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "mariadb",
+      "version": "1.0",
+      "local_image_id": "50fe3dc7e71e5ddc2222ec6a4f5148b70b3e2b529ef6c6352c131229923db497",
+      "platform": "linux/amd64",
+      "test": "mariadb",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "wordpress",
+      "version": "1.0",
+      "local_image_id": "739a4ceb8fbd449c9385c30a9ce46c71ff11a14d28135a40e756d6938a11c70c",
+      "platform": "linux/amd64",
+      "test": "wordpress",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "phpmyadmin",
+      "version": "1.0",
+      "local_image_id": "de9b82ab6d3afa9289c862dd1d25b2d1a22e0fed0c823f6cfe1bf7d58fd70939",
+      "platform": "linux/amd64",
+      "test": "phpmyadmin",
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    }
+  ]
+}

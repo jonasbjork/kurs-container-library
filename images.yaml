@@ -1,0 +1,59 @@
+namespace: quay.io/kurs
+images:
+  - name: nginx
+    version: '1.0'
+    strategy: build
+    context: images/nginx
+    test: http
+    port: 8080
+    path: /
+  - name: postgresql
+    version: '1.0'
+    strategy: build
+    context: images/postgresql
+    test: postgres
+  - name: python
+    version: '1.0'
+    strategy: build
+    context: images/python
+    test: python
+  - name: network-tools
+    version: '1.0'
+    strategy: build
+    context: images/network-tools
+    test: tools
+  - name: flask-lab
+    version: '1.0'
+    strategy: build
+    context: images/flask-lab
+    test: http
+    port: 8080
+    path: /health
+  - name: mysql
+    version: '1.0'
+    strategy: build
+    context: images/mysql
+    test: mysql
+    port: 3306
+  - name: mariadb
+    version: '1.0'
+    strategy: build
+    context: images/mariadb
+    test: mariadb
+    port: 3306
+  - name: wordpress
+    version: '1.0'
+    strategy: build
+    context: images/wordpress
+    test: wordpress
+    port: 8080
+    path: /wp-admin/install.php?step=1
+  - name: phpmyadmin
+    version: '1.0'
+    strategy: build
+    context: images/phpmyadmin
+    test: phpmyadmin
+    port: 8080
+    path: /
+# Extend strategy: mirror after explicitly validating an upstream image.
+# Stable publication is disabled pending registry-enforced immutability.

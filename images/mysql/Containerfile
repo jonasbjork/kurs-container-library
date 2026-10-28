@@ -1,0 +1,4 @@
+# SCLorg upstream, CentOS Stream 9; source: https://github.com/sclorg/mysql-container
+FROM quay.io/sclorg/mysql-84-c9s:latest@sha256:5ba05d8f6e1261e02ff6fa8d19ea46e1c9a22dd12ecec557f4e6a9dcb011880e
+USER 1001
+EXPOSE 3306

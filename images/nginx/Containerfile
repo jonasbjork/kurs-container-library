@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/ubi:9.6
+USER 0
+RUN dnf -y install nginx && dnf clean all && \
+    mkdir -p /tmp/nginx /var/lib/nginx /var/log/nginx && \
+    chgrp -R 0 /tmp/nginx /var/lib/nginx /var/log/nginx /etc/nginx && \
+    chmod -R g=u /tmp/nginx /var/lib/nginx /var/log/nginx /etc/nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN chgrp 0 /etc/nginx/nginx.conf && chmod g=u /etc/nginx/nginx.conf
+USER 1001
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

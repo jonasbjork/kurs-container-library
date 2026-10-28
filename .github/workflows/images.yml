@@ -1,0 +1,67 @@
+name: Build, smoke-test and publish
+'on':
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Image to process
+        required: true
+        default: all
+        type: choice
+        options: [all, nginx, postgresql, python, network-tools, flask-lab, mysql, mariadb, wordpress, phpmyadmin]
+      channel:
+        description: candidate publishes a run-specific tag; stable is disabled
+        required: true
+        default: candidate
+        type: choice
+        options: [candidate]
+      publish:
+        description: Publish after successful tests (requires Quay secrets)
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    - cron: '17 3 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: kurs-images
+  cancel-in-progress: false
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman skopeo python3-yaml
+      - name: Regression tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Build and test
+        env:
+          IMAGE: ${{ inputs.image || 'all' }}
+        run: |
+          python3 scripts/library.py build --name "$IMAGE"
+          python3 scripts/library.py test --name "$IMAGE"
+      - name: Login to Quay
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        env:
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+        run: |
+          test -n "$QUAY_USERNAME" && test -n "$QUAY_TOKEN"
+          printf '%s' "$QUAY_TOKEN" | podman login quay.io --username "$QUAY_USERNAME" --password-stdin
+      - name: Publish tested images
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        env:
+          IMAGE: ${{ inputs.image || 'all' }}
+          CHANNEL: ${{ inputs.channel || 'candidate' }}
+          ALLOW_PUBLISH: 'yes'
+        run: python3 scripts/library.py publish --name "$IMAGE" --channel "$CHANNEL"
+      - name: Logout from Quay
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.publish }}
+        run: podman logout quay.io || true

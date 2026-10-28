@@ -1,0 +1,28 @@
+# OPTIONAL: template example for an available OKD cluster; not used by CI.
+# Replace image with an actual candidate tag before applying.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kurs-flask-smoke
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kurs-flask-smoke
+  template:
+    metadata:
+      labels:
+        app: kurs-flask-smoke
+    spec:
+      containers:
+        - name: web
+          image: quay.io/kurs/flask-lab:REPLACE_WITH_TESTED_TAG
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
