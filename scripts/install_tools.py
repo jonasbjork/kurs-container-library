@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install checksum-pinned official scanner binaries; no curl|shell installers."""
+"""Install checksum-pinned official binaries; no curl|shell installers."""
 import argparse
 import hashlib
 import io
@@ -16,15 +16,19 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dest', type=Path, required=True)
+    parser.add_argument('--lock', choices=['tools.lock.json', 'okd-client.lock.json'], default='tools.lock.json')
     args = parser.parse_args()
     machine = {'x86_64': 'amd64', 'arm64': 'arm64', 'aarch64': 'arm64'}.get(platform.machine())
     target = f'{platform.system().lower()}/{machine}'
-    lock = json.loads((ROOT / 'tools.lock.json').read_text())
+    lock = json.loads((ROOT / args.lock).read_text())
     args.dest.mkdir(parents=True, exist_ok=True)
     for name, tool in lock.items():
         asset = tool['assets'][target]
-        if not asset['url'].startswith(f'https://github.com/{tool["repository"]}/releases/download/'):
-            raise ValueError('tool download must use the locked official GitHub repository')
+        prefix = (f'https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{tool["version"]}/'
+                  if name == 'oc' and args.lock == 'okd-client.lock.json'
+                  else f'https://github.com/{tool["repository"]}/releases/download/')
+        if not asset['url'].startswith(prefix):
+            raise ValueError('tool download must use its official versioned distribution')
         downloads = args.dest / '.downloads'
         downloads.mkdir(exist_ok=True)
         archive_path = downloads / (name + '-' + tool['version'] + '.tar.gz')

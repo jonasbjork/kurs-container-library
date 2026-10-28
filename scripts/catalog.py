@@ -36,6 +36,19 @@ def generate(cfg, root, reports, fingerprint):
             published = json.loads(publication.read_text())
             if published.get('fingerprint') == fingerprint(item) and published.get('image_id') == evidence.get('image_id'):
                 row['published'] = published['published']
+        okd_path = reports / 'okd/result.json'
+        if okd_path.is_file() and row['published']:
+            okd = json.loads(okd_path.read_text())
+            exact = f"{cfg['namespace']}/{item['name']}@{row['published']['digest']}"
+            matches = [r for r in okd.get('images', []) if r.get('reference') == exact and r.get('name') == item['name']]
+            if (okd.get('schema_version') == 1 and okd.get('status') == 'pass'
+                    and okd.get('cleanup') == 'pass' and okd.get('cluster_version')
+                    and okd.get('test_definition_sha256') and len(matches) == 1
+                    and matches[0].get('status') == 'pass' and matches[0].get('okd_status') == 'okd-verified'):
+                row['okd_status'] = 'okd-verified'
+                row['okd_verification'] = {'reference': exact, 'cluster_version': okd['cluster_version'],
+                                           'tested_at': matches[0]['tested_at'],
+                                           'test_definition_sha256': okd['test_definition_sha256']}
         rows.append(row)
     output = root / 'catalog'
     output.mkdir(exist_ok=True)
@@ -55,5 +68,6 @@ def generate(cfg, root, reports, fingerprint):
                   f"- Runtime-variabler (sätt i miljön före start): `{', '.join(row['environment']) or 'inga obligatoriska'}`",
                   '- Databas-/appvariabler, nätverk och volymer: se [README](../README.md).',
                   f"- Testad image: `{row['local_image_id'] or 'inte verifierad för aktuella källor'}`",
-                  f"- Publicerad referens: `{json.dumps(row['published']) if row['published'] else 'inte publicerad'}`"]
+                  f"- Publicerad referens: `{json.dumps(row['published']) if row['published'] else 'inte publicerad'}`",
+                  f"- OKD-bevis för exakt publicerad digest: `{json.dumps(row.get('okd_verification'), ensure_ascii=False) if row.get('okd_verification') else 'inte verifierad'}`"]
     (output / 'README.md').write_text('\n'.join(lines) + '\n')

@@ -205,4 +205,25 @@ Syft-SBOM och Trivy-policy med noll kritiska fynd och inga undantag. Rapport:
 `catalog/images.json`. CI laddar upp provenance, SBOM, CVE-rapporter och katalog
 även vid fel. Publicering kräver ny test/skanning i samma CLI-anrop och knyter
 rapporterna till faktisk registry-digest. Ingen Quay-publicering har utförts.
-Native amd64-CI för P1 verifieras i implementerings-PR:n. OKD är fortsatt P2.
+P1 är mergad via PR #1; native amd64-CI på main är godkänd:
+https://github.com/jonasbjork/kurs-container-library/actions/runs/40776889642.
+OKD är fortsatt separat P2.
+
+
+## P2 genomförande, 2026-10-28
+
+Separat manuellt workflow `okd.yml` och `scripts/okd.py` testar redan publicerade
+kandidat-digests. Unikt namespace, controller-skapade Pods med egen
+ServiceAccount, faktisk restricted-v2-admission och namespace-tilldelad UID/
+SELinux kontrolleras. Runtime-privilegier, skrivbehörigheter, readiness,
+HTTP och autentiserad SQL testas; phpMyAdmin gör även webbinloggning.
+Resultat med klusterversion, digest, tidsstämpel och pass/fail/pending sparas
+separat och kopplas endast till samma publicerade digest i katalogen.
+Städningsfel blockerar okd-verified. Se `docs/OKD.md`.
+
+Lokal utvecklingsverifiering: 57 regressionsprov och actionlint godkända;
+versionslåst oc 4.22.18 har hämtats och checksummeverifierats. Ingen klusterresurs
+har skapats. Befintlig lokal OKD-inloggning är ogiltig, och inga kandidater har
+publicerats av detta arbete. Verklig P2-klusterverifiering är därför pending.
+Inget får betecknas okd-verified innan testet körts med en giltig inloggning och
+verkliga publicerade kandidat-digests. Inget har publicerats till Quay.

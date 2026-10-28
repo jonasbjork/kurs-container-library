@@ -79,14 +79,14 @@ class LoginForm(HTMLParser):
             self.inside = False
 
 
-def login_phpmyadmin(url):
+def login_phpmyadmin(url, user='kurs', password='testpass'):
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     with opener.open(url, timeout=5) as response:
         form = LoginForm()
         form.feed(response.read().decode('utf-8'))
     if 'token' not in form.fields or 'pma_username' not in form.fields:
         raise RuntimeError('missing phpMyAdmin login form/token')
-    form.fields.update(pma_username='kurs', pma_password='testpass', server='1')
+    form.fields.update(pma_username=user, pma_password=password, server='1')
     data = urllib.parse.urlencode(form.fields).encode()
     with opener.open(urllib.parse.urljoin(url, form.action), data=data, timeout=10) as response:
         body = urllib.parse.unquote(response.read().decode('utf-8'))

@@ -29,6 +29,7 @@ En enkel HTTP-server för webb- och nätverkslabbar.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:7f5454eea50a9783671464221a526f5fd2322d27f7adbdc00bd803cfd515ce70`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## postgresql
 
@@ -44,6 +45,7 @@ PostgreSQL-databas för SQL-övningar.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:0f1de6e3103530c5ea1e2af0ae1683413e2e0f8c7cdad55a0b6916e8bfd9d8d6`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## python
 
@@ -59,6 +61,7 @@ Oförändrad UBI Python 3.12-runtime för egna kommandon och programmeringslabba
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:8859db5624bbfb0c7e83adc8a04f7b0ed608e196b0e269017b81775ad4a6fa40`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## network-tools
 
@@ -74,6 +77,7 @@ Nätverksdiagnostik med curl, dig, ip, ping, tracepath, jq och ncat.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:2a0fcec240d47073928d5feacf3568bb2faa2848a2790cb18bacfcc2be4304e6`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## flask-lab
 
@@ -89,6 +93,7 @@ Flask-övningsapp med JSON-svar och health-endpoint.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:4e0de144c2e2acd4e89b7816839e76dc5eed90e3b189ae06ba20c57b6c3f414f`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## mysql
 
@@ -104,6 +109,7 @@ MySQL-databas för SQL- och webblabbar.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:3979b18e917ab86afdcaffc92b48cd0a357f0e15aa7ad15a8088b7ef0f145622`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## mariadb
 
@@ -119,6 +125,7 @@ MariaDB-databas för SQL- och webblabbar.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:4542a8db183229a8c3cf089b7f0bf59e360a03f8d267580b3a6cb81a44cf1e01`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## wordpress
 
@@ -134,6 +141,7 @@ WordPress med extern MySQL/MariaDB för CMS-övningar.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:ed3c4052caea80cd4acfd452f0bda0313bc556af6c412068563f499e97ef8261`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
 
 ## phpmyadmin
 
@@ -149,3 +157,4 @@ Webbgränssnitt för MySQL/MariaDB med cookie-inloggning.
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
 - Testad image: `sha256:bb44f9a6e76120cfedf38a7bfe4924c340fb8621b9a2ff0819e9b863aa822816`
 - Publicerad referens: `inte publicerad`
+- OKD-bevis för exakt publicerad digest: `inte verifierad`
