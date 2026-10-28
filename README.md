@@ -1,6 +1,6 @@
 # Kurs Container Library
 
-Manifeststyrt bibliotek för `quay.io/kurs`. Innehåller nio **kandidatimages**, inte garanterat färdigverifierade OKD-images. Basimages kommer från Red Hat UBI och SCLorg/CentOS Stream. Alla nio är lokalt Podman-testade för linux/amd64 via QEMU på en ARM64-VM. Inga automatiska publiceringar sker utan uttrycklig aktivering.
+Manifeststyrt bibliotek för `quay.io/kurs`. Innehåller nio **kandidatimages**, inte garanterat färdigverifierade OKD-images. Basimages kommer från Red Hat UBI och SCLorg/CentOS Stream. Alla nio är Podman-testade för linux/amd64 både lokalt via QEMU och på native amd64 i GitHub Actions. Inga automatiska publiceringar sker utan uttrycklig aktivering.
 
 ## Kom igång
 
@@ -29,7 +29,7 @@ Veckoschemat bygger och smoke-testar men **publicerar ingenting**. Därmed går 
 
 - Endast `build`-strategin är implementerad i MVP. `mirror` kan införas i en andra iteration med Skopeo för images som först klarat testmatrisen.
 - Bildbaser som använder `latest` kan ändras; lås till digest i produktionsversionen för reproducerbarhet.
-- Lokal containerverifiering är genomförd; native amd64 i GitHub Actions och OKD återstår.
+- Lokal och native amd64-verifiering i GitHub Actions är genomförd; OKD återstår.
 - PostgreSQL-test startar en tillfällig databas utan beständig volym.
 - CI är konfigurerat för `linux/amd64`; ARM64-images och multiarch är inte verifierade.
 - För bättre supply-chain-hantering i nästa iteration: Trivy, SBOM/Syft, digest-lock, licensmetadata och automatiserad förändringsrapport.
@@ -46,12 +46,17 @@ Skapa ett tillfälligt namespace med normal `restricted-v2` SCC och verifiera ka
 
 ## P0: verifiering 2026-10-28
 
-Alla nio images har byggts och smoke-testats med Podman. Status är
-**`podman-tested`** för de image-ID:n som finns i
-[verifieringsrapporten](tests/results/podman-2026-10-28.json).
-Miljö: rootless Podman 6.1.4, Linux/arm64-VM på macOS, linux/amd64-images
-körda via QEMU. Detta är inte native amd64-verifiering eller `okd-verified`.
-Ingen GitHub Actions-körning har utförts från denna arbetskopia.
+**P0 är verifierat med stable-publicering fortsatt spärrad.**
+[CI-körning 40711451261](https://github.com/jonasbjork/kurs-container-library/actions/runs/40711451261)
+passerade för källkodscommit `2f8313b20fdc88bb9b3329104b65d224b7eef7c6`:
+nio byggen, arton UID-smoke-prov och tjugo regressionsprov på Ubuntu 24.04,
+native linux/amd64. Quay-inloggning och publicering hoppades över.
+
+Status är **`podman-tested`**, fortfarande inte `okd-verified`.
+[CI-rapporten](tests/results/github-actions-2026-10-28.json) innehåller testat
+commit, run-URL och runnerns lokala image-ID:n. Den tidigare
+[lokala rapporten](tests/results/podman-2026-10-28.json) dokumenterar
+QEMU-körningen på Linux/arm64-VM med Podman-server 6.1.0 och macOS-klient 6.1.4.
 Inget har publicerats till Quay och inga registry-inställningar har ändrats.
 
 | Image | Bygg | Smoke, UID 1001230000 | Smoke, UID 1002340000 |
@@ -86,11 +91,11 @@ byggen/tester rättades och kördes om:
 /tmp/kurs-p0-venv/bin/python scripts/library.py test --name <namn>
 ```
 
-Utfall: **16 regressionsprov godkända**, actionlint 1.7.12 utan anmärkning,
+Utfall efter CI-rättningarna: **20 regressionsprov godkända**, actionlint 1.7.12 utan anmärkning,
 båda startskripten syntaxkontrollerade och `git diff --check` utan fel.
 Detaljerade bygg-, test- och felsökningsloggar finns lokalt i
 `/tmp/kurs-p0-results/` och kan försvinna när temporära filer städas.
-JSON-rapporten innehåller lokala image-ID:n, inte publicerade registry-digests.
+JSON-rapporterna innehåller lokala image-ID:n, inte publicerade registry-digests.
 
 Korrigerade fel:
 
@@ -116,7 +121,7 @@ SIGTERM och Ctrl-C. Testcontainers, testnätverk och anonyma testvolymer är
 städade; befintliga användarresurser har inte tagits bort. SIGKILL kan inte
 fångas. Fixture-hämtning görs före resursstart med separat timeout.
 
-Kvar före full P0-verifiering i CI: kör samma matris på en native amd64-runner.
+Den fullständiga matrisen är nu grön på native amd64 i CI.
 Stable-publicering förblir spärrad tills registryts immutabilitet kan
 garanteras. Databastesterna använder tillfällig lagring; beständiga volymer,
 återstart med data och OKD-SCC är inte verifierade.

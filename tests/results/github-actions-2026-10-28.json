@@ -1,0 +1,117 @@
+{
+  "source_commit": "2f8313b20fdc88bb9b3329104b65d224b7eef7c6",
+  "run_url": "https://github.com/jonasbjork/kurs-container-library/actions/runs/40711451261",
+  "completed_at": "2026-10-28T15:03:52Z",
+  "runner": "ubuntu-24.04",
+  "platform": "linux/amd64",
+  "conclusion": "success",
+  "regression_tests_passed": 20,
+  "smoke_tests_passed": 18,
+  "gid": 0,
+  "capabilities": [],
+  "no_new_privileges": true,
+  "automatic_passwd_entry": false,
+  "okd_status": "not-verified",
+  "published": false,
+  "images": [
+    {
+      "name": "flask-lab",
+      "local_image_id": "sha256:10ac53fad41b4525133afbfd2ca089057283d6c6313a7e958817ebe7aabd0e29",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "mariadb",
+      "local_image_id": "sha256:028a358219573a4dc917625284ce3325f07a526e52847d6e8cec690afcb20db2",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "mysql",
+      "local_image_id": "sha256:29d316794e80080d9942c81fa9c6dbffe4598e8235d47c713d7cd6ba898ff6de",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "network-tools",
+      "local_image_id": "sha256:1c1f77e9d308a13ea1a4432e6c209dbf5b49e5ac58da25648077b3a7a143ec75",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "nginx",
+      "local_image_id": "sha256:29d0313354f41de871c66a060de67c80cf2031ac363514d1ad17d0c7cf493d73",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "phpmyadmin",
+      "local_image_id": "sha256:e03a44dd1bef0eb1482a494487593ab0e14a8247ab191f2275f480e2b7050d0f",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "postgresql",
+      "local_image_id": "sha256:8015bfd6fe29c494fb1cfd31debfc744bd11d786bb7853356b113356cf16bc5d",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "python",
+      "local_image_id": "sha256:429f367d19ff1c62370db254a6784566dfbc50f59030dfdd5ee653e8da39e66f",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    },
+    {
+      "name": "wordpress",
+      "local_image_id": "sha256:c8a22d55d2fc4e6c7c6306342f32a7110b4bd85047e8551f2461ad5bf5505468",
+      "uids_passed": [
+        1001230000,
+        1002340000
+      ],
+      "build": "pass",
+      "smoke": "pass",
+      "status": "podman-tested"
+    }
+  ]
+}

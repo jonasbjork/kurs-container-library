@@ -61,7 +61,7 @@ Publicering bör i första hand ske via GitHub Actions. För att kunna publicera
 
 ## Kända begränsningar och teknisk skuld
 
-- Samtliga nio images har nu byggts och smoke-testats lokalt för linux/amd64 via QEMU på Linux/arm64. Native amd64 i CI och OKD återstår; se README och tests/results/podman-2026-10-28.json.
+- Samtliga nio images har nu byggts och smoke-testats lokalt för linux/amd64 via QEMU på Linux/arm64. Native amd64 i CI är också godkänt; OKD återstår. Se README och tests/results/github-actions-2026-10-28.json.
 - Podman-tester med godtyckligt UID är inte likvärdiga med `restricted-v2`; SCC, seccomp, SELinux, securityContext och klusterspecifika begränsningar måste testas separat.
 - Stable-publicering är tekniskt spärrad. Registry-immutabilitet måste konfigureras och verifieras före eventuell aktivering. Inga registry-inställningar har ändrats.
 - `images.yaml` saknar upstream-metadata, image-digest, källversion, licensinformation och tydlig statusinformation.
@@ -165,7 +165,7 @@ Utöver de ursprungliga fem kandidaterna ingår nu `mysql` (8.4), `mariadb`
 (10.11), `wordpress` (6.9.10) och `phpmyadmin` (5.2.3). Manifest och CI omfattar
 nio images. Databasbaserna kommer från SCLorg/CentOS Stream 9; webbapparna
 använder UBI PHP 8.3. Alla nio kandidater har nu faktisk lokal Podman-verifiering via QEMU för amd64;
-native amd64 i CI och OKD återstår. Se README för teststatus, upstream-källor och labbexempel.
+även native amd64 i CI är godkänt; OKD återstår. Se README för teststatus, upstream-källor och labbexempel.
 Publiceringsförbudet utan uttryckligt godkännande kvarstår.
 
 ## P0-körning efter återställd Podman, 2026-10-28
@@ -176,3 +176,16 @@ PostgreSQL-bas, UBI-paket, rootless UID-mappning, CLI-OPcache under QEMU och
 PHP-FPM:s miljövariabler. phpMyAdmin testas nu med verklig webbinloggning.
 Exakta kommandon, begränsningar och lokala image-ID:n finns i README och
 `tests/results/podman-2026-10-28.json`. Inget har publicerats till Quay.
+
+## P0 godkänt i GitHub Actions, 2026-10-28
+
+P0:s bygg-, test- och publiceringsskydd är verifierade för källkodscommit
+`2f8313b20fdc88bb9b3329104b65d224b7eef7c6` i
+https://github.com/jonasbjork/kurs-container-library/actions/runs/40711451261.
+Alla nio byggen, arton UID-prov och tjugo regressionsprov passerar på native
+linux/amd64. Två CI-kompatibilitetsfel rättades: keep-id/GID 0 ersattes av
+explicita UID/GID-mappningar och pull --policy ersattes av image exists + pull.
+Rapport: `tests/results/github-actions-2026-10-28.json`.
+Stable-publicering är fortsatt tekniskt spärrad. Quay-stegen hoppades över;
+ingen publicering eller ändring av registry-inställningar har utförts.
+OKD och beständig lagring återstår som separat verifiering.
