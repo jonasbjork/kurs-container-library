@@ -74,7 +74,8 @@ class PipelineTests(unittest.TestCase):
             smoke.test_one(argparse.Namespace(type='tools', image='test'), '1001230000')
         self.assertNotIn('||', cmd.call_args.args[-1])
         self.assertIn('-ec', cmd.call_args.args)
-        self.assertIn('--userns=keep-id:uid=1001230000,gid=0', cmd.call_args.args)
+        self.assertIn('--uidmap=1001230000:0:1', cmd.call_args.args)
+        self.assertIn('--gidmap=0:0:65536', cmd.call_args.args)
         self.assertIn('--passwd=false', cmd.call_args.args)
         self.assertIn('--platform=linux/amd64', cmd.call_args.args)
 
@@ -157,6 +158,9 @@ class PipelineTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 smoke.login_phpmyadmin('http://localhost:8080/')
             self.assertEqual(factory.return_value.open.call_count, 1)
+
+    def test_rootful_mapping_keeps_high_host_uid(self):
+        self.assertEqual(smoke.user_namespace('1001230000', rootless=False), ['--userns=host'])
 
 
 if __name__ == '__main__':

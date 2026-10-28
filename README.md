@@ -100,7 +100,7 @@ Korrigerade fel:
   `iputils`. Konflikten mellan `curl-minimal` och `curl` löses explicit med
   DNF `--allowerasing`.
 - Rootless Podman behöver en explicit mappning för de höga test-UID:na.
-  `--userns=keep-id:uid=...,gid=0` används med `--passwd=false`, så UID:t inte
+  `--uidmap`/`--gidmap` används med `--passwd=false`, så UID:t inte
   automatiskt läggs in i `/etc/passwd`. GID 0, `--cap-drop=ALL` och
   `no-new-privileges` gäller fortsatt.
 - PHP-basens CLI-OPcache hängde/kraschade under QEMU. CLI-cache är avstängd
@@ -165,18 +165,18 @@ För en lokal labb efter lyckade byggen (sätt först `MYSQL_PASSWORD` i miljön
 ```bash
 podman network create kurs-lab
 podman run -d --name kurs-db --network kurs-lab \
-  --userns=keep-id:uid=1001230000,gid=0 --passwd=false \
+  --uidmap=0:1:65536 --uidmap=1001230000:0:1 --gidmap=0:0:65536 --passwd=false \
   --user 1001230000:0 --cap-drop=ALL --security-opt=no-new-privileges \
   -e MYSQL_USER=kurs -e MYSQL_DATABASE=kurs -e MYSQL_PASSWORD \
   localhost/kurs/mariadb:test
 podman run -d --name kurs-wordpress --network kurs-lab \
-  --userns=keep-id:uid=1001230000,gid=0 --passwd=false \
+  --uidmap=0:1:65536 --uidmap=1001230000:0:1 --gidmap=0:0:65536 --passwd=false \
   --user 1001230000:0 --cap-drop=ALL --security-opt=no-new-privileges \
   -p 127.0.0.1:8080:8080 \
   -e WORDPRESS_DB_HOST=kurs-db -e WORDPRESS_DB_NAME=kurs -e WORDPRESS_DB_USER=kurs \
   -e WORDPRESS_DB_PASSWORD="$MYSQL_PASSWORD" localhost/kurs/wordpress:test
 podman run -d --name kurs-phpmyadmin --network kurs-lab \
-  --userns=keep-id:uid=1001230000,gid=0 --passwd=false \
+  --uidmap=0:1:65536 --uidmap=1001230000:0:1 --gidmap=0:0:65536 --passwd=false \
   --user 1001230000:0 --cap-drop=ALL --security-opt=no-new-privileges \
   -p 127.0.0.1:8081:8080 -e PMA_HOST=kurs-db localhost/kurs/phpmyadmin:test
 ```
@@ -209,3 +209,8 @@ Upstream-källor:
 - [SCLorg PHP 8.3](https://github.com/sclorg/s2i-php-container/blob/master/8.3/README.md)
 - [WordPress releasearkiv](https://wordpress.org/download/releases/)
 - [phpMyAdmin nedladdningar och checksummor](https://www.phpmyadmin.net/downloads/)
+
+Första GitHub Actions-körningen byggde alla nio images men stoppades vid
+smoke-start av `keep-id`/GID 0 i runnerns Podman/crun. Testharnessen använder
+nu explicita rootless UID/GID-mappningar (kräver 65536 subordinate UID/GID).
+Rootful Podman behåller värdens UID/GID-namnrymd och kör med det höga UID:t.

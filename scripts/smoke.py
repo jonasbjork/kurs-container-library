@@ -102,12 +102,21 @@ def cleanup(args):
         print(f'Cleanup failed: {exc}', flush=True)
 
 
+def user_namespace(uid, rootless=True):
+    if not rootless:
+        return ['--userns=host']
+    # Map the caller to the high container UID and GID 0; map image system users
+    # to subordinate IDs. Avoid keep-id's gid=0 mapping bug on older Podman/crun.
+    return ['--uidmap=0:1:65536', f'--uidmap={uid}:0:1', '--gidmap=0:0:65536']
+
+
 def test_one(a, uid):
     name = 'kurs-smoke-' + uuid.uuid4().hex
     db_name, network = name + '-db', name + '-net'
     web = a.type in ('wordpress', 'phpmyadmin')
+    mapping = user_namespace(uid, getattr(a, 'rootless', True))
     common = ['--name', name, '--platform=linux/amd64', '--pull=never',
-              f'--userns=keep-id:uid={uid},gid=0', '--passwd=false',
+              *mapping, '--passwd=false',
               '--user', f'{uid}:0', '--cap-drop=ALL',
               '--security-opt=no-new-privileges']
     try:
@@ -126,7 +135,7 @@ def test_one(a, uid):
                 cmd('podman', 'network', 'create', network)
                 cmd('podman', 'run', '-d', '--name', db_name, '--network', network,
                     '--network-alias', 'database', '--platform=linux/amd64', '--pull=never',
-                    f'--userns=keep-id:uid={uid},gid=0', '--passwd=false', '--user', f'{uid}:0',
+                    *mapping, '--passwd=false', '--user', f'{uid}:0',
                     '--cap-drop=ALL', '--security-opt=no-new-privileges', *MYSQL_ENV,
                     DATABASE_FIXTURE)
                 extra = ['--network', network]
@@ -185,6 +194,10 @@ def main():
     p.add_argument('--path', default='/')
     a = p.parse_args()
     signal.signal(signal.SIGTERM, interrupted)
+    rootless = cmd('podman', 'info', '--format', '{{.Host.Security.Rootless}}', capture=True)
+    if rootless not in ('true', 'false'):
+        raise RuntimeError(f'Unexpected Podman rootless status: {rootless}')
+    a.rootless = rootless == 'true'
     if a.type in ('wordpress', 'phpmyadmin'):
         # Download before creating resources; a first pull may exceed the startup command timeout.
         cmd('podman', 'pull', '--platform=linux/amd64', '--policy=missing', DATABASE_FIXTURE, timeout=600)
