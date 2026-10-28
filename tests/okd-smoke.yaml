@@ -1,5 +1,7 @@
 # OPTIONAL: template example for an available OKD cluster; not used by CI.
-# Replace image with an actual candidate tag before applying.
+# Prefer scripts/okd.py; see docs/OKD.md for automated SCC/identity checks.
+# Replace the entire digest placeholder with a published linux/amd64 candidate digest.
+# Apply only inside a temporary namespace with a dedicated unprivileged ServiceAccount.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,11 +16,30 @@ spec:
       labels:
         app: kurs-flask-smoke
     spec:
+      serviceAccountName: kurs-smoke
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: web
-          image: quay.io/kurs/flask-lab:REPLACE_WITH_TESTED_TAG
+          image: quay.io/kurs/flask-lab@sha256:REPLACE_WITH_64_HEX_DIGEST
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 3
+            failureThreshold: 100
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

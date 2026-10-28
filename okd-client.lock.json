@@ -1,0 +1,15 @@
+{
+  "oc": {
+    "version": "4.22.18",
+    "assets": {
+      "linux/amd64": {
+        "url": "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.22.18/openshift-client-linux-4.22.18.tar.gz",
+        "sha256": "07751676809553e012448cdb3a755ffa7b11d7e25b8a6cc60a5a62a9f4b18159"
+      },
+      "darwin/arm64": {
+        "url": "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.22.18/openshift-client-mac-arm64-4.22.18.tar.gz",
+        "sha256": "3aae2ed8775aa180032d4828e29bdef7f6f65149f2ac57bad0349e1ae85198e6"
+      }
+    }
+  }
+}

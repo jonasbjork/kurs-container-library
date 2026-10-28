@@ -1,0 +1,71 @@
+name: Optional OKD verification
+'on':
+  workflow_dispatch:
+    inputs:
+      candidates:
+        description: 'JSON object: image name -> quay.io/kurs/name@sha256:digest; include database fixtures'
+        required: true
+        default: '{}'
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: kurs-okd-${{ github.run_id }}
+  cancel-in-progress: false
+jobs:
+  okd:
+    environment: okd
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install dependencies and pinned oc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo python3-venv curl
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          python3 scripts/install_tools.py --lock okd-client.lock.json --dest "$RUNNER_TEMP/okd-tools"
+          echo "$RUNNER_TEMP/okd-tools" >> "$GITHUB_PATH"
+      - name: Prepare candidate input and isolated kubeconfig
+        env:
+          CANDIDATES: ${{ inputs.candidates }}
+          OKD_KUBECONFIG: ${{ secrets.OKD_KUBECONFIG }}
+        run: |
+          umask 077
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP'])
+          (root / 'okd-candidates.json').write_text(os.environ['CANDIDATES'])
+          # Empty config yields pending; never inherits a runner's cluster login.
+          (root / 'kurs-kubeconfig').write_text(os.environ['OKD_KUBECONFIG'] or
+              'apiVersion: v1\nkind: Config\nclusters: []\ncontexts: []\nusers: []\n')
+          PY
+          echo "KUBECONFIG=$RUNNER_TEMP/kurs-kubeconfig" >> "$GITHUB_ENV"
+      - name: Verify published candidate digests on OKD
+        run: python3 scripts/okd.py --candidates "$RUNNER_TEMP/okd-candidates.json"
+      - name: Report outcome
+        if: ${{ always() }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path('reports/okd/result.json')
+          if path.is_file():
+              report = json.loads(path.read_text())
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+                  out.write('OKD status: **' + report['status'] + '**. See the digest-specific artifact.\n')
+          PY
+      - name: Upload digest-specific OKD result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: okd-result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/okd/result.json
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Remove local credentials
+        if: ${{ always() }}
+        run: rm -f "$RUNNER_TEMP/kurs-kubeconfig" "$RUNNER_TEMP/okd-candidates.json"

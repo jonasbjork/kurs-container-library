@@ -43,7 +43,7 @@ en tidsstämplad bedömning, inte en garanti att en image saknar sårbarheter.
 - [Uppdatera genom PR och granska lås](docs/UPDATES.md)
 - [Säkerhetspolicy, undantag, SBOM och publiceringsprovenance](docs/SECURITY.md)
 
-P1:s lokala verifiering finns i [resultatrapporten](tests/results/p1-local-2026-10-28.json): nio images, arton UID-prov, 38 regressionsprov, SBOM och noll kritiska fynd utan undantag. Lägre severity-fynd kvarstår i Trivy-rapporterna. Native amd64-CI för P1 följs i PR:n.
+P1:s lokala verifiering finns i [resultatrapporten](tests/results/p1-local-2026-10-28.json): nio images, arton UID-prov, 38 regressionsprov, SBOM och noll kritiska fynd utan undantag. Lägre severity-fynd kvarstår i Trivy-rapporterna. P1 är mergad och [native amd64-CI på main är grön](https://github.com/jonasbjork/kurs-container-library/actions/runs/40776889642).
 
 P1 byter databasernas CentOS Stream-baser: Trivy stöder inte deras OS-familj och
 RHEL-alternativen kräver villkorsacceptans/inloggning. De officiella baserna
@@ -87,7 +87,17 @@ Veckoschemat bygger och smoke-testar men **publicerar ingenting**. Därmed går 
 
 ## Testa på OKD när tillgängligt
 
-Skapa ett tillfälligt namespace med normal `restricted-v2` SCC och verifiera kandidater med Deployment/Service. `tests/okd-smoke.yaml` är ett exempel. Undvik `anyuid` och `privileged`. Markera resultat separat: `podman-tested` respektive `okd-verified`.
+[P2-instruktioner](docs/OKD.md) beskriver det separata manuella workflowet
+**Optional OKD verification** och `scripts/okd.py`. Ange redan publicerade
+`quay.io/kurs/<namn>@sha256:<digest>` i en JSON-fil; webbappar behöver även sin
+databasfixture som digest. Flödet skapar ett tillfälligt namespace, kräver faktisk
+`restricted-v2`-admission, testar runtime/HTTP/SQL och städar efteråt.
+
+Resultat i `reports/okd/result.json` och separat CI-artifact anger exakt digest,
+klusterversion och `pass/fail/pending`. Saknat kluster eller inga publicerade
+kandidater ger `pending`, aldrig `okd-verified`. Huvud-CI är oberoende av OKD.
+Katalogen kan koppla ett godkänt resultat till samma publicerade digest.
+Ingen image har ännu verifierats på ett verkligt OKD-kluster.
 
 ## Källor
 
