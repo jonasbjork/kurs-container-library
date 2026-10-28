@@ -1,9 +1,11 @@
-FROM registry.access.redhat.com/ubi9/php-83:latest
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 USER 0
 WORKDIR /opt/app-root/src
-# Release archive from wordpress.org, checksum recorded at source review.
-RUN curl -fsSL --retry 3 https://wordpress.org/wordpress-6.9.10.tar.gz -o /tmp/wordpress.tar.gz && \
-    echo 'a1c0dc12e2271c6afaabf329d5af7a976f8d2c8c592773178a5baaeafc2d4f4a  /tmp/wordpress.tar.gz' | sha256sum -c - && \
+ARG APP_URL
+ARG APP_SHA256
+RUN curl -fsSL --retry 3 "${APP_URL}" -o /tmp/wordpress.tar.gz && \
+    echo "${APP_SHA256}  /tmp/wordpress.tar.gz" | sha256sum -c - && \
     tar -xzf /tmp/wordpress.tar.gz --strip-components=1 -C /opt/app-root/src && \
     rm /tmp/wordpress.tar.gz
 COPY wp-config.php /opt/app-root/src/wp-config.php

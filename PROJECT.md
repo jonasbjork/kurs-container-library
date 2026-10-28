@@ -41,7 +41,7 @@ kurs-container-library/
 
 Nio kandidatimages: `nginx`, `postgresql`, `python`, `network-tools`, `flask-lab`, `mysql`, `mariadb`, `wordpress`, `phpmyadmin` (version `1.0` i nuvarande manifest). Dessa är **inte** produktions- eller OKD-verifierade.
 
-`images.yaml` är single source of truth för namn, version, byggkontext och testtyp. `scripts/library.py` stödjer i nuläget **endast `strategy: build`**. `mirror` har diskuterats men är **inte implementerad**. Befintligt veckojobb bygger och smoke-testar men publicerar inte. Manuell publicering kräver `publish=true` och Quay-secrets. `candidate` får körningsspecifikt tag; `stable` är spärrat i CLI tills registry-immutabilitet har verifierats.
+`images.yaml` är single source of truth för namn, version, byggkontext och testtyp. `scripts/library.py` stödjer nu både `build` och `mirror` med plattformsspecifika digest-lås och separat mirror-bedömning. Befintligt veckojobb bygger och smoke-testar men publicerar inte. Manuell publicering kräver `publish=true` och Quay-secrets. `candidate` får körningsspecifikt tag; `stable` är spärrat i CLI tills registry-immutabilitet har verifierats.
 
 ## Körning lokalt
 
@@ -64,9 +64,9 @@ Publicering bör i första hand ske via GitHub Actions. För att kunna publicera
 - Samtliga nio images har nu byggts och smoke-testats lokalt för linux/amd64 via QEMU på Linux/arm64. Native amd64 i CI är också godkänt; OKD återstår. Se README och tests/results/github-actions-2026-10-28.json.
 - Podman-tester med godtyckligt UID är inte likvärdiga med `restricted-v2`; SCC, seccomp, SELinux, securityContext och klusterspecifika begränsningar måste testas separat.
 - Stable-publicering är tekniskt spärrad. Registry-immutabilitet måste konfigureras och verifieras före eventuell aktivering. Inga registry-inställningar har ändrats.
-- `images.yaml` saknar upstream-metadata, image-digest, källversion, licensinformation och tydlig statusinformation.
-- Ingen implementerad Skopeo-mirror, versionsdetektion, Trivy-skanning, SBOM (t.ex. Syft), signering eller notifiering/ändringsrapport.
-- Basimages kan ändras mellan byggningar, även när en tag ser konstant ut; pinna till digest för reproducerbarhet och uppdatera genom PR.
+- Manifestet innehåller nu upstream-metadata, digest, plattform, källversion och licenser. Verifieringsstatus och rapporthashar genereras för matchande input-fingerprint.
+- Skopeo-mirror, digest-ändringsrapport, Trivy-policy, Syft-SBOM och katalog är implementerade. Signering och notifieringar återstår.
+- Basimages är låsta till digest; ändringar tas genom PR. DNF/APK/paketrepon och byggverktyg kan fortfarande hindra byteidentisk reproducerbarhet.
 - PostgreSQL:s smoke-test använder tillfällig databas utan beständig lagring. Bedöm testets realism och krav för arbitrary UID.
 - Network-tools-image är avsedd för vanlig nätverksdiagnostik; verktyg som `tcpdump` kan kräva capabilities och ska inte få sådana automatiskt.
 - CI kör för närvarande bara `linux/amd64`.
@@ -189,3 +189,20 @@ Rapport: `tests/results/github-actions-2026-10-28.json`.
 Stable-publicering är fortsatt tekniskt spärrad. Quay-stegen hoppades över;
 ingen publicering eller ändring av registry-inställningar har utförts.
 OKD och beständig lagring återstår som separat verifiering.
+
+## P1 genomförande, 2026-10-28
+
+Manifest med JSON Schema, explicita amd64-lås, källa/version/licens och
+kontrollerad PR-uppdateringsväg är implementerat. Python är en bedömd oförändrad
+UBI-mirror via Skopeo; åtta images byggs. Databaserna är non-root-anpassningar av
+Docker Official Images på skanningsbara OS. CentOS Stream blockerades korrekt
+av säkerhetsgrinden. Kritiska fynd åtgärdades genom bas-/beroendeval och borttagna
+oanvända verktyg, inte undantag. phpMyAdmin har hash-låst Composer och Twig 3.30.
+
+Lokal P1-verifiering: nio byggen/mirrors, arton UID-prov, 34 regressionsprov,
+Syft-SBOM och Trivy-policy med noll kritiska fynd och inga undantag. Rapport:
+`tests/results/p1-local-2026-10-28.json`. Katalog: `catalog/README.md` och
+`catalog/images.json`. CI laddar upp provenance, SBOM, CVE-rapporter och katalog
+även vid fel. Publicering kräver ny test/skanning i samma CLI-anrop och knyter
+rapporterna till faktisk registry-digest. Ingen Quay-publicering har utförts.
+Native amd64-CI för P1 verifieras i implementerings-PR:n. OKD är fortsatt P2.

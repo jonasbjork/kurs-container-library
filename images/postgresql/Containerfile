@@ -1,5 +1,15 @@
-# SCLorg PostgreSQL 16 for OpenShift arbitrary UID execution.
-# Source: https://github.com/sclorg/postgresql-container
-FROM quay.io/sclorg/postgresql-16-c9s:latest@sha256:1e47f477e07d4378179a21f9cc88402ad39aa32789e0cd62fe2cef16c2a7bbdf
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+USER 0
+# Default and tested runtimes are non-root; remove unused privilege-switch helpers.
+RUN rm -f /usr/local/bin/gosu /usr/local/bin/su-exec
+RUN mkdir -p /var/lib/postgresql/data /var/run/postgresql && \
+    chgrp -R 0 /var/lib/postgresql /var/run/postgresql && \
+    chmod -R g=u /var/lib/postgresql /var/run/postgresql
+COPY start.sh /usr/local/bin/kurs-postgresql
+RUN chmod 755 /usr/local/bin/kurs-postgresql
+ENV PGDATA=/var/lib/postgresql/data/pgdata
 USER 1001
 EXPOSE 5432
+ENTRYPOINT ["/usr/local/bin/kurs-postgresql"]
+CMD ["postgres"]

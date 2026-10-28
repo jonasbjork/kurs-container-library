@@ -1,0 +1,4 @@
+# Policy is evaluated by scripts/security.py; no findings may be filtered out.
+scanners:
+  - vuln
+ignore-unfixed: false

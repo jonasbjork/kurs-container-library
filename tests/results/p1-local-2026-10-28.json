@@ -1,0 +1,543 @@
+{
+  "recorded_at": "2026-10-28T15:55:11.424389+00:00",
+  "environment": "rootless Podman Linux/arm64 VM, linux/amd64 images via QEMU",
+  "schema_version": 1,
+  "images_passed": 9,
+  "uid_tests_passed": 18,
+  "regression_tests_passed": 34,
+  "critical_findings": 0,
+  "exceptions": [],
+  "published": false,
+  "okd_status": "not-verified",
+  "images": [
+    {
+      "name": "nginx",
+      "image_id": "sha256:7f5454eea50a9783671464221a526f5fd2322d27f7adbdc00bd803cfd515ce70",
+      "source": "registry.access.redhat.com/ubi9/ubi@sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e",
+      "fingerprint": "sha256:7a201cf541e87367d5df85fa8e369bd71895f0c79f0a3f73191af31af490d5e0",
+      "built_at": "2026-10-28T15:43:09.721875+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/ubi:latest",
+        "digest": "sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e",
+        "version": "9.8",
+        "documentation": "https://github.com/nginx/nginx"
+      },
+      "platform": "linux/amd64",
+      "license": "Various (UBI and RPM component licenses)",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:44:53.850073+00:00",
+      "audited_at": "2026-10-28T15:44:58.434669+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 276,
+          "MEDIUM": 260,
+          "HIGH": 29,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:f03f7bee1e80d3aad02555b05ce915e96b9e69917eb163f0bd2193da8bc36e53",
+        "sbom.cdx.json": "sha256:cf1d70548dfd78bf20b5e23159fb7cec86b63ef9a7b2ed7f5045f63b932f4040",
+        "trivy.json": "sha256:4a573530afc0a00b79d77440dad0477059433ee4e9e5ad579e9e5a3e120adc6f"
+      }
+    },
+    {
+      "name": "postgresql",
+      "image_id": "sha256:0f1de6e3103530c5ea1e2af0ae1683413e2e0f8c7cdad55a0b6916e8bfd9d8d6",
+      "source": "docker.io/library/postgres@sha256:40d24790c1cc175f4245cfc730389fbc122f43d9af3f8dc2d4214902920e0899",
+      "fingerprint": "sha256:8fa108f12182bd8b63cb51cc70ad41f581936879d1034a10f19f7cc647e84317",
+      "built_at": "2026-10-28T15:49:14.062280+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "docker.io/library/postgres:16-alpine3.23",
+        "digest": "sha256:40d24790c1cc175f4245cfc730389fbc122f43d9af3f8dc2d4214902920e0899",
+        "version": "16",
+        "documentation": "https://github.com/docker-library/postgres"
+      },
+      "platform": "linux/amd64",
+      "license": "PostgreSQL; bundled component licenses",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:49:28.345456+00:00",
+      "audited_at": "2026-10-28T15:49:34.791535+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 0,
+          "MEDIUM": 0,
+          "HIGH": 0,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:7be32b5cfacd15a547a936b4fbd2b11e16a5db599b4f9498045db2b237f530da",
+        "sbom.cdx.json": "sha256:36387944febba8beccf8e861fcee2d25b18ae46cdcb2677e457b18a03a673a96",
+        "trivy.json": "sha256:0f3ff3774e0f9c32d19c4e7e213c94ad64fa8394f39a9381316da7a6720fed97"
+      }
+    },
+    {
+      "name": "python",
+      "image_id": "sha256:8859db5624bbfb0c7e83adc8a04f7b0ed608e196b0e269017b81775ad4a6fa40",
+      "source": "registry.access.redhat.com/ubi9/python-312@sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+      "fingerprint": "sha256:36632dc8b75e57a8125fef6768b1e936fb69faac7ea54b9f7d186f9561225d23",
+      "built_at": "2026-10-28T15:43:34.099019+00:00",
+      "strategy": "mirror",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/python-312:latest",
+        "digest": "sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+        "version": "3.12",
+        "documentation": "https://github.com/sclorg/s2i-python-container"
+      },
+      "platform": "linux/amd64",
+      "license": "Python-2.0; bundled component licenses",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:45:39.798165+00:00",
+      "audited_at": "2026-10-28T15:45:51.326984+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 2777,
+          "MEDIUM": 5151,
+          "HIGH": 229,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:b79f16a692c146705a6f4814285d37c7ef3e5b75437e8330e15dcab89eda21e4",
+        "sbom.cdx.json": "sha256:b07f05d41963bbf534a9ef39e33be74f6a1869fd45e8f5911e81b582425d0bd2",
+        "trivy.json": "sha256:1367c755113a13eb96d97dc24eedd4c2850e7bc9d191131ec9598f17396471eb"
+      }
+    },
+    {
+      "name": "network-tools",
+      "image_id": "sha256:2a0fcec240d47073928d5feacf3568bb2faa2848a2790cb18bacfcc2be4304e6",
+      "source": "registry.access.redhat.com/ubi9/ubi@sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e",
+      "fingerprint": "sha256:9c50fb474db7d7e5d4abf211236f6b35d11c8419ead795ef1d94b11e71fefbc7",
+      "built_at": "2026-10-28T15:43:46.276738+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/ubi:latest",
+        "digest": "sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e",
+        "version": "9.8",
+        "documentation": "https://catalog.redhat.com/software/containers/ubi9/ubi/615bcf606feffc5384e8452e"
+      },
+      "platform": "linux/amd64",
+      "license": "Various (UBI and RPM component licenses)",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:45:52.998453+00:00",
+      "audited_at": "2026-10-28T15:45:57.125707+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 271,
+          "MEDIUM": 286,
+          "HIGH": 33,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:cfdc0ee6cb619f9277ab23e916684fcf212bf42d644d1c120f2fdc91b4407811",
+        "sbom.cdx.json": "sha256:9474a8c1337b3133a4b7f240e0743655df99dd7ac5db0842c95c9dd96b7d6e0b",
+        "trivy.json": "sha256:a473c4eb4b1540bbe317bccaf258bf7b3fe0c497e13d940bd256665755e96d04"
+      }
+    },
+    {
+      "name": "flask-lab",
+      "image_id": "sha256:4e0de144c2e2acd4e89b7816839e76dc5eed90e3b189ae06ba20c57b6c3f414f",
+      "source": "registry.access.redhat.com/ubi9/python-312@sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+      "fingerprint": "sha256:4de229056968a00941a52ca7b9e5ce2f603cdda8224ccc8589a0ef28b124fbce",
+      "built_at": "2026-10-28T15:43:59.162392+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/python-312:latest",
+        "digest": "sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+        "version": "3.12",
+        "documentation": "https://github.com/sclorg/s2i-python-container"
+      },
+      "platform": "linux/amd64",
+      "license": "BSD-3-Clause (Flask); bundled component licenses",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:46:21.383287+00:00",
+      "audited_at": "2026-10-28T15:46:33.344274+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 2777,
+          "MEDIUM": 5151,
+          "HIGH": 229,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:b79f16a692c146705a6f4814285d37c7ef3e5b75437e8330e15dcab89eda21e4",
+        "sbom.cdx.json": "sha256:f7e817c48a9cc5388a195c2f75fa33fb9561a5258cbc9eb1a48a29c2dd6cf1b1",
+        "trivy.json": "sha256:14a70a2a794905fb407bea824e1734f58013435e6c90031dcc8e9dea6f606b7e"
+      }
+    },
+    {
+      "name": "mysql",
+      "image_id": "sha256:3979b18e917ab86afdcaffc92b48cd0a357f0e15aa7ad15a8088b7ef0f145622",
+      "source": "docker.io/library/mysql@sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
+      "fingerprint": "sha256:910af88d81786de1eb15730a4e072fdd3130793bbf4407831b85a922063a2901",
+      "built_at": "2026-10-28T15:49:12.691641+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "docker.io/library/mysql:8.4",
+        "digest": "sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
+        "version": "8.4",
+        "documentation": "https://github.com/docker-library/mysql"
+      },
+      "platform": "linux/amd64",
+      "license": "GPL-2.0-only; bundled component licenses",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:50:01.420209+00:00",
+      "audited_at": "2026-10-28T15:50:12.189861+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 0,
+          "MEDIUM": 0,
+          "HIGH": 0,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:7be32b5cfacd15a547a936b4fbd2b11e16a5db599b4f9498045db2b237f530da",
+        "sbom.cdx.json": "sha256:a6da34683f4635b9a71cec5396baf743ab26c77799a31d667b83df092e296190",
+        "trivy.json": "sha256:af23098be1f2ec8fd4d608a50a6cf3f6146001cf1968132e9f5fa899add4b163"
+      }
+    },
+    {
+      "name": "mariadb",
+      "image_id": "sha256:3d25c4df868e0fd2b213acf1ccf4143613e69f2ea1afbd949acdb177b4dc7bf0",
+      "source": "docker.io/library/mariadb@sha256:6c65a843396dc6c78dd0da19eccaa0a91d25d9d26a4c2afcb75010ac3f59f5ea",
+      "fingerprint": "sha256:29d7b0a711f35c5a121d9f3c52a48b5cd7b9a8b9eb8349685add568da1f991b0",
+      "built_at": "2026-10-28T15:50:26.286186+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "docker.io/library/mariadb:10.11",
+        "digest": "sha256:6c65a843396dc6c78dd0da19eccaa0a91d25d9d26a4c2afcb75010ac3f59f5ea",
+        "version": "10.11",
+        "documentation": "https://github.com/MariaDB/mariadb-docker"
+      },
+      "platform": "linux/amd64",
+      "license": "GPL-2.0-only; bundled component licenses",
+      "artifact": null,
+      "build_tool": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:51:06.634198+00:00",
+      "audited_at": "2026-10-28T15:51:11.265030+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 20,
+          "MEDIUM": 22,
+          "HIGH": 0,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:a91bd8dbbe1e9c219e08e2a63c10384c2d2bb2960ca3dd0400f4e3d87cbe9e86",
+        "sbom.cdx.json": "sha256:e108af8d788c382bed69dc56f4b1560e1f2cb4973c8e64c1bcc55ed02cd13709",
+        "trivy.json": "sha256:3171a88e83b57a5d4fe289f6b98b01bacdf49686f893daa30bd4bd45257339cf"
+      }
+    },
+    {
+      "name": "wordpress",
+      "image_id": "sha256:ed3c4052caea80cd4acfd452f0bda0313bc556af6c412068563f499e97ef8261",
+      "source": "registry.access.redhat.com/ubi9/php-83@sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
+      "fingerprint": "sha256:3118a1b25f41053e093d9ce20d7c1870605d87e260bfe962878266b7436b0907",
+      "built_at": "2026-10-28T15:51:27.680688+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/php-83:latest",
+        "digest": "sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
+        "version": "8.3",
+        "documentation": "https://github.com/sclorg/s2i-php-container"
+      },
+      "platform": "linux/amd64",
+      "license": "GPL-2.0-or-later (WordPress); bundled component licenses",
+      "artifact": {
+        "url": "https://wordpress.org/wordpress-6.9.10.tar.gz",
+        "version": "6.9.10",
+        "sha256": "a1c0dc12e2271c6afaabf329d5af7a976f8d2c8c592773178a5baaeafc2d4f4a"
+      },
+      "build_tool": null,
+      "source_commit": null,
+      "ci_run_id": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:52:11.414497+00:00",
+      "audited_at": "2026-10-28T15:52:25.408452+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 0,
+          "LOW": 2773,
+          "MEDIUM": 5200,
+          "HIGH": 227,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:6431297fe527212f52ba607f8e198118868a696723d9e6824d410b5b84a7b960",
+        "sbom.cdx.json": "sha256:abb4a984cb628dd98fb731456d31fc92abf9d337be1d5dd284b57cf57ca1acc2",
+        "trivy.json": "sha256:5a449bc6909f6924aede89f8689a340ba3cf659e4770a89c8be3b058b12ff9aa"
+      }
+    },
+    {
+      "name": "phpmyadmin",
+      "image_id": "sha256:bb44f9a6e76120cfedf38a7bfe4924c340fb8621b9a2ff0819e9b863aa822816",
+      "source": "registry.access.redhat.com/ubi9/php-83@sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
+      "fingerprint": "sha256:6783d00614ccd5f7d63907a54e09caf5afd81b81adf680edfa1be1704c7479ba",
+      "built_at": "2026-10-28T15:52:40.004547+00:00",
+      "strategy": "build",
+      "source_metadata": {
+        "reference": "registry.access.redhat.com/ubi9/php-83:latest",
+        "digest": "sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
+        "version": "8.3",
+        "documentation": "https://github.com/sclorg/s2i-php-container"
+      },
+      "platform": "linux/amd64",
+      "license": "GPL-2.0-or-later (phpMyAdmin); bundled component licenses",
+      "artifact": {
+        "url": "https://files.phpmyadmin.net/phpMyAdmin/5.2.3/phpMyAdmin-5.2.3-all-languages.tar.gz",
+        "version": "5.2.3",
+        "sha256": "12ba1c425fa4071abbd4e7668c9ebdeac0b0755a467a6d6d5026122bb47c102b"
+      },
+      "build_tool": {
+        "version": "2.10.3",
+        "url": "https://getcomposer.org/download/2.10.3/composer.phar",
+        "sha256": "7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6"
+      },
+      "source_commit": null,
+      "ci_run_id": null,
+      "smoke": "pass",
+      "security": "pass",
+      "okd": "not-verified",
+      "uids": [
+        1001230000,
+        1002340000
+      ],
+      "tested_at": "2026-10-28T15:53:26.519367+00:00",
+      "audited_at": "2026-10-28T15:53:39.067697+00:00",
+      "policy": {
+        "status": "pass",
+        "blocked": [],
+        "waived": [],
+        "severity_counts": {
+          "UNKNOWN": 1,
+          "LOW": 2773,
+          "MEDIUM": 5201,
+          "HIGH": 228,
+          "CRITICAL": 0
+        },
+        "rule": "All CRITICAL findings, including unfixed; exact scoped exceptions expire within 90 days",
+        "tool_versions": {
+          "trivy": "Version: 0.76.1",
+          "syft": "syft 1.55.0"
+        },
+        "vulnerability_database": {
+          "Version": 2,
+          "NextUpdate": "2026-10-29T13:01:10.618103614Z",
+          "UpdatedAt": "2026-10-28T13:01:10.618103814Z",
+          "DownloadedAt": "2026-10-28T15:21:21.032844Z"
+        },
+        "tools_lock_sha256": "6e050e4c3012170dcce6c67d687b56f5844fbbb571db2f86d696ab23bd850371",
+        "exception_policy_sha256": "f61aeedca026e2157cce3fcd61a41ec0bfd834af30e38e160f7205573055af8b"
+      },
+      "reports": {
+        "policy.json": "sha256:7df89e680945278dc62e7f1f6798a12dbd5ad5414fbd0a70c1f2752f88313f99",
+        "sbom.cdx.json": "sha256:f64709ae635b2459acd0f78852d0da7522ad51ebbaba6e82914a45773974e878",
+        "trivy.json": "sha256:5940b46fef33f2b364decc53e4b3aad459a9da6f64e01b401e7f380e3bb24692"
+      }
+    }
+  ]
+}

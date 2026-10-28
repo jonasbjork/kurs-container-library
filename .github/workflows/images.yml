@@ -1,4 +1,4 @@
-name: Build, smoke-test and publish
+name: Build, verify and publish
 'on':
   pull_request:
   push:
@@ -12,13 +12,13 @@ name: Build, smoke-test and publish
         type: choice
         options: [all, nginx, postgresql, python, network-tools, flask-lab, mysql, mariadb, wordpress, phpmyadmin]
       channel:
-        description: candidate publishes a run-specific tag; stable is disabled
+        description: Candidate only; stable remains disabled
         required: true
         default: candidate
         type: choice
         options: [candidate]
       publish:
-        description: Publish after successful tests (requires Quay secrets)
+        description: Publish after verification (requires explicit approval and Quay secrets)
         required: true
         default: false
         type: boolean
@@ -33,35 +33,68 @@ jobs:
   build-test:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    env:
+      TRIVY_CACHE_DIR: ${{ github.workspace }}/.cache/trivy
     steps:
-      - uses: actions/checkout@v4
-      - name: Install tools
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned tools and Python dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y podman skopeo python3-yaml
-      - name: Regression tests
-        run: python3 -m unittest discover -s tests -v
-      - name: Build and test
+          sudo apt-get install -y podman skopeo python3-venv curl
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          python3 scripts/install_tools.py --dest "$RUNNER_TEMP/kurs-tools"
+          echo "$RUNNER_TEMP/kurs-tools" >> "$GITHUB_PATH"
+      - name: Manifest and regression tests
+        run: |
+          python3 scripts/library.py validate
+          python3 -m unittest discover -s tests -v
+      - name: Read-only upstream update report
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: python3 scripts/library.py updates
+      - name: Build or import locked images
         env:
           IMAGE: ${{ inputs.image || 'all' }}
-        run: |
-          python3 scripts/library.py build --name "$IMAGE"
-          python3 scripts/library.py test --name "$IMAGE"
-      - name: Login to Quay
+        run: python3 scripts/library.py build --name "$IMAGE"
+      - name: Smoke tests, SBOM and critical vulnerability policy
+        env:
+          IMAGE: ${{ inputs.image || 'all' }}
+        run: python3 scripts/library.py verify --name "$IMAGE"
+      - name: Enforce publication branch
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        run: test "$GITHUB_REF" = refs/heads/main
+      - name: Login to Quay
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main' }}
         env:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
         run: |
           test -n "$QUAY_USERNAME" && test -n "$QUAY_TOKEN"
           printf '%s' "$QUAY_TOKEN" | podman login quay.io --username "$QUAY_USERNAME" --password-stdin
-      - name: Publish tested images
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+      - name: Publish exact tested and scanned images
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main' }}
         env:
           IMAGE: ${{ inputs.image || 'all' }}
           CHANNEL: ${{ inputs.channel || 'candidate' }}
           ALLOW_PUBLISH: 'yes'
         run: python3 scripts/library.py publish --name "$IMAGE" --channel "$CHANNEL"
+      - name: Generate catalog from matching verification records
+        if: ${{ always() }}
+        run: .venv/bin/python scripts/library.py catalog
+      - name: Upload provenance, Trivy, SBOM and catalog
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: image-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/
+            catalog/
+            assessments/
+            images.yaml
+            tools.lock.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Logout from Quay
-        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.publish }}
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.publish && github.ref == 'refs/heads/main' }}
         run: podman logout quay.io || true
