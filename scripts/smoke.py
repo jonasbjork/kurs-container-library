@@ -5,6 +5,7 @@ import http.cookiejar
 from html.parser import HTMLParser
 import signal
 import subprocess
+import sys
 import time
 import urllib.request
 import urllib.parse
@@ -23,7 +24,7 @@ def interrupted(signum, frame):
 
 MYSQL_ENV = ['-e', 'MYSQL_USER=kurs', '-e', 'MYSQL_PASSWORD=testpass',
              '-e', 'MYSQL_DATABASE=kurs']
-DATABASE_FIXTURE = 'quay.io/sclorg/mariadb-1011-c9s:latest@sha256:8cd872811ba542787ceaaa64ffed649e4fabb9b34891008825f59c9424bac765'
+DATABASE_FIXTURE = 'localhost/kurs/mariadb:test'
 PHP_SQL = ("mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); "
            "$db=new mysqli(getenv('WORDPRESS_DB_HOST') ?: getenv('PMA_HOST'), "
            "'kurs', 'testpass', 'kurs'); "
@@ -96,10 +97,12 @@ def login_phpmyadmin(url):
 def cleanup(args):
     # A failed cleanup must not prevent attempts to remove the other resources.
     try:
-        subprocess.run(args, check=False, timeout=30,
-                       stdout=None if args[1] == 'logs' else subprocess.DEVNULL)
+        result = subprocess.run(args, check=False, timeout=30,
+                                stdout=None if args[1] == 'logs' else subprocess.DEVNULL)
+        return result.returncode == 0
     except (OSError, subprocess.TimeoutExpired) as exc:
         print(f'Cleanup failed: {exc}', flush=True)
+        return False
 
 
 def user_namespace(uid, rootless=True):
@@ -114,8 +117,9 @@ def test_one(a, uid):
     name = 'kurs-smoke-' + uuid.uuid4().hex
     db_name, network = name + '-db', name + '-net'
     web = a.type in ('wordpress', 'phpmyadmin')
+    database_image = getattr(a, 'database_image', DATABASE_FIXTURE)
     mapping = user_namespace(uid, getattr(a, 'rootless', True))
-    common = ['--name', name, '--platform=linux/amd64', '--pull=never',
+    common = ['--init', '--name', name, '--platform=linux/amd64', '--pull=never',
               *mapping, '--passwd=false',
               '--user', f'{uid}:0', '--cap-drop=ALL',
               '--security-opt=no-new-privileges']
@@ -133,11 +137,11 @@ def test_one(a, uid):
                 extra = MYSQL_ENV
             elif web:
                 cmd('podman', 'network', 'create', network)
-                cmd('podman', 'run', '-d', '--name', db_name, '--network', network,
+                cmd('podman', 'run', '-d', '--init', '--name', db_name, '--network', network,
                     '--network-alias', 'database', '--platform=linux/amd64', '--pull=never',
                     *mapping, '--passwd=false', '--user', f'{uid}:0',
                     '--cap-drop=ALL', '--security-opt=no-new-privileges', *MYSQL_ENV,
-                    DATABASE_FIXTURE)
+                    database_image)
                 extra = ['--network', network]
                 if a.type == 'wordpress':
                     extra += ['-e', 'WORDPRESS_DB_HOST=database', '-e', 'WORDPRESS_DB_NAME=kurs',
@@ -145,13 +149,16 @@ def test_one(a, uid):
                 else:
                     extra += ['-e', 'PMA_HOST=database']
             port = {'postgres': '5432', 'mysql': '3306', 'mariadb': '3306'}.get(a.type, a.port)
-            cmd('podman', 'run', '-d', *common, *extra, '-p', f'127.0.0.1::{port}', a.image)
+            command = ['python3', '-m', 'http.server', str(port), '--bind', '0.0.0.0'] if a.type == 'python' else []
+            cmd('podman', 'run', '-d', *common, *extra, '-p', f'127.0.0.1::{port}', a.image, *command)
             host_port = cmd('podman', 'port', name, f'{port}/tcp', capture=True).rsplit(':', 1)[-1]
             deadline = time.monotonic() + 120
             while True:
+                # An exited process cannot become ready; do not retry it for two minutes.
+                for service in ([name, db_name] if web else [name]):
+                    if cmd('podman', 'inspect', '--format', '{{.State.Running}}', service, capture=True) != 'true':
+                        raise RuntimeError(f'container exited: {service}')
                 try:
-                    if cmd('podman', 'inspect', '--format', '{{.State.Running}}', name, capture=True) != 'true':
-                        raise RuntimeError('container exited')
                     if a.type == 'postgres':
                         result = cmd('podman', 'exec', '-e', 'PGPASSWORD=testpass', name, 'psql',
                                      '-h', '127.0.0.1', '-U', 'kurs', '-d', 'kurs', '-v', 'ON_ERROR_STOP=1',
@@ -180,25 +187,23 @@ def test_one(a, uid):
             cleanup(['podman', 'logs', db_name])
         raise
     finally:
-        cleanup(['podman', 'rm', '-f', '--volumes', name])
+        cleaned = [cleanup(['podman', 'rm', '-f', '--volumes', '--time=0', name])]
         if web:
-            cleanup(['podman', 'rm', '-f', '--volumes', db_name])
-            cleanup(['podman', 'network', 'rm', network])
+            cleaned.append(cleanup(['podman', 'rm', '-f', '--volumes', '--time=0', db_name]))
+            cleaned.append(cleanup(['podman', 'network', 'rm', network]))
+        if not all(cleaned) and sys.exc_info()[0] is None:
+            raise RuntimeError('test resource cleanup failed')
 
 
-def prepare_database():
-    try:
-        cmd('podman', 'image', 'exists', DATABASE_FIXTURE)
-    except subprocess.CalledProcessError as exc:
-        if exc.returncode != 1:
-            raise
-        # Older Podman has no `pull --policy`; image exists works across versions.
-        cmd('podman', 'pull', '--platform=linux/amd64', DATABASE_FIXTURE, timeout=600)
+def prepare_database(image=DATABASE_FIXTURE):
+    # The manifest build resolves and builds this dependency before web tests.
+    cmd('podman', 'image', 'exists', image)
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--image', required=True)
+    p.add_argument('--database-image', default=DATABASE_FIXTURE)
     p.add_argument('--type', choices=['http', 'postgres', 'python', 'tools', 'mysql', 'mariadb', 'wordpress', 'phpmyadmin'], required=True)
     p.add_argument('--port', default='8080')
     p.add_argument('--path', default='/')
@@ -209,8 +214,8 @@ def main():
         raise RuntimeError(f'Unexpected Podman rootless status: {rootless}')
     a.rootless = rootless == 'true'
     if a.type in ('wordpress', 'phpmyadmin'):
-        # Download before creating resources; a first pull may exceed the startup command timeout.
-        prepare_database()
+        # Require the local manifest dependency before creating resources.
+        prepare_database(a.database_image)
     for uid in ('1001230000', '1002340000'):
         test_one(a, uid)
 

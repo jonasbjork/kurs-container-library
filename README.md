@@ -1,38 +1,89 @@
 # Kurs Container Library
 
-Manifeststyrt bibliotek för `quay.io/kurs`. Innehåller nio **kandidatimages**, inte garanterat färdigverifierade OKD-images. Basimages kommer från Red Hat UBI och SCLorg/CentOS Stream. Alla nio är Podman-testade för linux/amd64 både lokalt via QEMU och på native amd64 i GitHub Actions. Inga automatiska publiceringar sker utan uttrycklig aktivering.
+Manifeststyrt bibliotek för `quay.io/kurs`. Innehåller nio **kandidatimages**, inte garanterat färdigverifierade OKD-images. Basimages kommer från Red Hat UBI och Docker Official Images (PostgreSQL, MySQL och MariaDB). P0 är verifierat både lokalt och i native amd64-CI. Den slutliga P1-matrisen är lokalt verifierad; se P1-rapporten nedan. Inga automatiska publiceringar sker utan uttrycklig aktivering.
 
 ## Kom igång
 
-På en Linux-maskin med Podman, Python 3 och PyYAML:
+På Linux med Podman, Skopeo, curl och Python 3 (eller motsvarande Podman-VM):
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+source .venv/bin/activate
+python3 scripts/install_tools.py --dest .tools/bin
+export PATH="$PWD/.tools/bin:$PATH"
 python3 scripts/library.py list
 python3 scripts/library.py build --name flask-lab
 python3 scripts/library.py test --name flask-lab
 ```
 
-För att testa allt: `python3 scripts/library.py build` följt av `python3 scripts/library.py test`. Byggen kräver internet. Varje image testas med två godtyckliga UID och GID 0, utan capabilities. Podman-tester garanterar **inte** full OKD-kompatibilitet.
+För hela P1-grinden: `python3 scripts/library.py build` följt av `python3 scripts/library.py verify`. `test` kör enbart smoke-tester. Byggen kräver internet. Varje image testas med två godtyckliga UID och GID 0, utan capabilities. Podman-tester garanterar **inte** full OKD-kompatibilitet.
+
+## P1: spårbara källor och säkerhetsgrind
+
+[Genererad katalog](catalog/README.md) och [JSON-katalog](catalog/images.json)
+innehåller källor, versioner, licensinformation, plattform, startkommandon och
+verifieringsstatus. Schema: `schema/images.schema.json`. Manifestet är single
+source of truth även för webbtesternas databasberoende.
+
+```bash
+python3 scripts/library.py validate
+python3 scripts/library.py build
+python3 scripts/library.py verify
+python3 scripts/library.py catalog
+python3 scripts/library.py updates
+```
+
+`verify` kräver Syft/Trivy enligt `tools.lock.json`. Alla kritiska CVE:er blockerar,
+även ofixade, om de saknar ett granskat tidsbegränsat undantag. Saknat OS-stöd
+blockerar också. SBOM, full Trivy-rapport, policy och provenance sparas under
+`reports/<namn>/` och laddas upp som CI-artifacts även vid fel. Scan-resultat är
+en tidsstämplad bedömning, inte en garanti att en image saknar sårbarheter.
+
+- [Uppdatera genom PR och granska lås](docs/UPDATES.md)
+- [Säkerhetspolicy, undantag, SBOM och publiceringsprovenance](docs/SECURITY.md)
+
+P1:s lokala verifiering finns i [resultatrapporten](tests/results/p1-local-2026-10-28.json): nio images, arton UID-prov, 38 regressionsprov, SBOM och noll kritiska fynd utan undantag. Lägre severity-fynd kvarstår i Trivy-rapporterna. Native amd64-CI för P1 följs i PR:n.
+
+P1 byter databasernas CentOS Stream-baser: Trivy stöder inte deras OS-familj och
+RHEL-alternativen kräver villkorsacceptans/inloggning. De officiella baserna
+anpassas med GID 0, högportar och egna runtime-ägda datakataloger. PostgreSQL använder Alpine 3.23, MySQL Oracle Linux 9 och MariaDB Ubuntu 22.04. Oanvända gosu/su-exec är borttagna; images körs som non-root. MySQL Shell, som innehöll en sårbar certifi-kopia, ingår inte; vanliga mysql-klienten finns kvar. SQL-gränssnittet
+behålls. För MySQL/MariaDB genererar wrappern ett slumpmässigt root-lösenord vid
+start om inget har lämnats, utan att logga det. Ange `MYSQL_ROOT_PASSWORD` själv
+om du behöver administrativ åtkomst med beständig lagring.
+
+Python är nu en oförändrad SDK/runtime-mirror. Upstreams standardkommando visar
+användningshjälp; ange ditt eget kommando, till exempel:
+
+```bash
+podman run --rm -it localhost/kurs/python:test python3
+podman run --rm -p 127.0.0.1:8080:8080 localhost/kurs/python:test python3 -m http.server 8080 --bind 0.0.0.0
+```
+
+Python-smoke startar HTTP-servern explicit för att testa runtimen under båda UID:n.
+phpMyAdmin 5.2.3:s medföljande Twig 3.11.3 blockerades av sex kritiska fynd. Ett
+versionslåst produktions-Composer-lås uppdaterar Twig till 3.30.0 och används i
+bygget; plugins och Composer-scripts körs inte. Detta är en dokumenterad anpassning
+av releasearkivet, inte ett påstående om en ny upstream-release av phpMyAdmin.
 
 ## Publicera till Quay
 
 1. Skapa organisationen `kurs` på Quay.io och de nio repositorierna, eller konfigurera tillåten automatisk repository creation.
 2. Skapa ett robotkonto med skrivrättigheter till dessa repositorier.
 3. Lägg GitHub Actions secrets `QUAY_USERNAME` och `QUAY_TOKEN` i repot. GitHub Actions finns i `.github/workflows/images.yml`.
-4. Kör **Actions → Build, smoke-test and publish → Run workflow**. Välj `candidate` och `publish=true` endast efter uttryckligt godkännande för publicering. Publiceringskommandot testar alla valda images igen och pushar deras testade image-ID:n.
+4. Kör **Actions → Build, smoke-test and publish → Run workflow**. Välj `candidate` och `publish=true` endast efter uttryckligt godkännande för publicering. Publiceringskommandot testar och skannar alla valda images igen och pushar deras exakta image-ID:n. SBOM och CVE-rapporter knyts till registryts returnerade digest.
 5. `stable` är tekniskt spärrat, även med `ALLOW_PUBLISH=yes`. Det får aktiveras först efter att registryts skydd mot överskrivning har konfigurerats och verifierats. En kontroll av befintligt tag före push räcker inte för att eliminera race conditions. Inga registry-inställningar har ändrats.
 
 Veckoschemat bygger och smoke-testar men **publicerar ingenting**. Därmed går det inte att oavsiktligt ersätta undervisningsimages när upstream ändras.
 
 ## Viktiga avgränsningar
 
-- Endast `build`-strategin är implementerad i MVP. `mirror` kan införas i en andra iteration med Skopeo för images som först klarat testmatrisen.
-- Bildbaser som använder `latest` kan ändras; lås till digest i produktionsversionen för reproducerbarhet.
+- `build` och `mirror` stöds. Python är en oförändrad, bedömd UBI-mirror; övriga åtta är anpassade byggen.
+- Alla byggbaser är låsta till plattformsspecifik digest. Referenstaggar bevakas enbart för uppdateringsrapporter.
 - Lokal och native amd64-verifiering i GitHub Actions är genomförd; OKD återstår.
 - PostgreSQL-test startar en tillfällig databas utan beständig volym.
 - CI är konfigurerat för `linux/amd64`; ARM64-images och multiarch är inte verifierade.
-- För bättre supply-chain-hantering i nästa iteration: Trivy, SBOM/Syft, digest-lock, licensmetadata och automatiserad förändringsrapport.
+- Trivy, Syft, digest-lock och uppdateringsrapport ingår i P1. Signering och full byte-reproducerbarhet återstår.
 
 ## Testa på OKD när tillgängligt
 
@@ -46,7 +97,7 @@ Skapa ett tillfälligt namespace med normal `restricted-v2` SCC och verifiera ka
 
 ## P0: verifiering 2026-10-28
 
-**P0 är verifierat med stable-publicering fortsatt spärrad.**
+**P0 är verifierat med stable-publicering fortsatt spärrad. Rapporten nedan avser P0-källkoden, inte P1-ändringarnas nya image-ID:n.**
 [CI-körning 40711451261](https://github.com/jonasbjork/kurs-container-library/actions/runs/40711451261)
 passerade för källkodscommit `2f8313b20fdc88bb9b3329104b65d224b7eef7c6`:
 nio byggen, arton UID-smoke-prov och tjugo regressionsprov på Ubuntu 24.04,
@@ -119,7 +170,7 @@ Korrigerade fel:
 Smoke-testerna har temporära namn, timeout, felloggar och städning vid fel,
 SIGTERM och Ctrl-C. Testcontainers, testnätverk och anonyma testvolymer är
 städade; befintliga användarresurser har inte tagits bort. SIGKILL kan inte
-fångas. Fixture-hämtning görs före resursstart med separat timeout.
+fångas. P0-fixture-hämtning gjordes före resursstart med separat timeout. P1 använder i stället det lokalt byggda manifestberoendet.
 
 Den fullständiga matrisen är nu grön på native amd64 i CI.
 Stable-publicering förblir spärrad tills registryts immutabilitet kan
@@ -133,14 +184,14 @@ upstream-versionerna anges nedan. De är **Podman-testade**, men inte OKD-verifi
 
 | Image | Upstream | Port | Runtime-inställningar |
 | --- | --- | --- | --- |
-| `mysql` | MySQL 8.4, SCLorg/CentOS Stream 9 | 3306 | `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
-| `mariadb` | MariaDB 10.11, SCLorg/CentOS Stream 9 | 3306 | `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
+| `mysql` | MySQL 8.4, Docker Official Image/Oracle Linux 9 | 3306 | `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
+| `mariadb` | MariaDB 10.11, Docker Official Image/Ubuntu 22.04 | 3306 | `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` |
 | `wordpress` | WordPress 6.9.10 på UBI PHP 8.3 | 8080 | `WORDPRESS_DB_HOST`, `WORDPRESS_DB_NAME`, `WORDPRESS_DB_USER`, `WORDPRESS_DB_PASSWORD` |
-| `phpmyadmin` | phpMyAdmin 5.2.3 på UBI PHP 8.3 | 8080 | `PMA_HOST`, valfritt `PMA_PORT` (3306) |
+| `phpmyadmin` | phpMyAdmin 5.2.3 + Twig 3.30 på UBI PHP 8.3 | 8080 | `PMA_HOST`, valfritt `PMA_PORT` (3306) |
 
-Observera att även MariaDB använder `MYSQL_*` enligt SCLorgs gränssnitt.
-Databasernas baser är låsta till digest. Webbapparnas versionslåsta arkiv
-kontrolleras med SHA256 under bygget; PHP-basen är fortfarande en rörlig tag.
+MariaDB behåller `MYSQL_*`-gränssnittet. PostgreSQL stöder både tidigare `POSTGRESQL_*` och upstreams `POSTGRES_*` via en wrapper.
+Alla baser är låsta till digest. Webbapparnas versionslåsta arkiv
+kontrolleras med SHA256 under bygget; PHP-basen är också låst; Flask har hash-låsta wheels och phpMyAdmin ett granskbart Composer-lås.
 Licenser: MySQL Community GPLv2, MariaDB-server GPLv2, WordPress GPLv2 eller
 senare, phpMyAdmin GPLv2 eller senare; inkluderade komponenter har egna licenser.
 
@@ -158,8 +209,7 @@ python3 scripts/library.py test --name phpmyadmin
 ```
 
 Databastesterna kräver autentiserad TCP-anslutning samt SQL-skrivning/läsning.
-Webbapparnas tester startar en isolerad MariaDB-fixture från SCLorg med låst
-digest (hämtas vid behov), verifierar PHP/mysqli mot databasen och kontrollerar
+Webbapparnas tester startar den byggda och fingerprint-matchade MariaDB-imagen som en isolerad fixture, verifierar PHP/mysqli mot databasen och kontrollerar
 WordPress installationsformulär respektive phpMyAdmins webbinloggning med synlig kursdatabas.
 Allt körs med två godtyckliga UID, GID 0 och borttagna capabilities.
 Fixture, anonyma volymer och tillfälligt nätverk städas efter varje test.
@@ -192,7 +242,7 @@ MySQL kan ersätta MariaDB i exemplet. phpMyAdmin använder cookie-inloggning
 och tillåter inte tomt lösenord. Inga databaslösenord byggs in i images.
 
 Labbexemplet använder tillfällig lagring. För beständig drift behöver databasen
-lagring på `/var/lib/mysql/data` och WordPress på `/opt/app-root/src/wp-content`,
+lagring på `/var/lib/mysql/data` för MySQL, `/var/lib/kurs-mariadb/data` för MariaDB och WordPress på `/opt/app-root/src/wp-content`,
 med rättigheter för valt UID/GID. Volymmontering och återstart med beständiga
 data är inte verifierade. WordPress genererar salts vid start; ange beständiga
 `WORDPRESS_AUTH_KEY`, `WORDPRESS_SECURE_AUTH_KEY`, `WORDPRESS_LOGGED_IN_KEY`,
@@ -215,6 +265,8 @@ Upstream-källor:
 - [WordPress releasearkiv](https://wordpress.org/download/releases/)
 - [phpMyAdmin nedladdningar och checksummor](https://www.phpmyadmin.net/downloads/)
 
+### P0-historik
+
 Första GitHub Actions-körningen byggde alla nio images men stoppades vid
 smoke-start av `keep-id`/GID 0 i runnerns Podman/crun. Testharnessen använder
 nu explicita rootless UID/GID-mappningar (kräver 65536 subordinate UID/GID).
@@ -223,3 +275,8 @@ Rootful Podman behåller värdens UID/GID-namnrymd och kör med det höga UID:t.
 Nästa CI-körning klarade de sju första imagesens samtliga UID-prov men
 runnerns Podman saknade `pull --policy`. Fixture-hämtning använder därför
 `podman image exists` följt av vanlig `podman pull` när imagen saknas.
+
+P1-CI visade att äldre Podman/Buildah kastar bort rättighetsändringar under
+MariaDB-basens ärvda VOLUME. MariaDB använder därför `/var/lib/kurs-mariadb/data`.
+Smoke-tester kör en minimal init för signalhantering/reaping, avbryter direkt
+vid avslutad service och städar med omedelbar stop-timeout.

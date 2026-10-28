@@ -1,59 +1,214 @@
 namespace: quay.io/kurs
 images:
-  - name: nginx
-    version: '1.0'
-    strategy: build
-    context: images/nginx
-    test: http
-    port: 8080
-    path: /
-  - name: postgresql
-    version: '1.0'
-    strategy: build
-    context: images/postgresql
-    test: postgres
-  - name: python
-    version: '1.0'
-    strategy: build
-    context: images/python
-    test: python
-  - name: network-tools
-    version: '1.0'
-    strategy: build
-    context: images/network-tools
-    test: tools
-  - name: flask-lab
-    version: '1.0'
-    strategy: build
-    context: images/flask-lab
-    test: http
-    port: 8080
-    path: /health
-  - name: mysql
-    version: '1.0'
-    strategy: build
-    context: images/mysql
-    test: mysql
-    port: 3306
-  - name: mariadb
-    version: '1.0'
-    strategy: build
-    context: images/mariadb
-    test: mariadb
-    port: 3306
-  - name: wordpress
-    version: '1.0'
-    strategy: build
-    context: images/wordpress
-    test: wordpress
-    port: 8080
-    path: /wp-admin/install.php?step=1
-  - name: phpmyadmin
-    version: '1.0'
-    strategy: build
-    context: images/phpmyadmin
-    test: phpmyadmin
-    port: 8080
-    path: /
-# Extend strategy: mirror after explicitly validating an upstream image.
-# Stable publication is disabled pending registry-enforced immutability.
+- name: nginx
+  version: '1.0'
+  strategy: build
+  context: images/nginx
+  test: http
+  port: 8080
+  path: /
+  platform: linux/amd64
+  description: En enkel HTTP-server för webb- och nätverkslabbar.
+  license: Various (UBI and RPM component licenses)
+  source:
+    reference: registry.access.redhat.com/ubi9/ubi:latest
+    digest: sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e
+    version: '9.8'
+    documentation: https://github.com/nginx/nginx
+  command:
+  - nginx
+  - -g
+  - daemon off;
+  verification:
+    okd: not-verified
+  environment: []
+- name: postgresql
+  version: '1.0'
+  strategy: build
+  test: postgres
+  platform: linux/amd64
+  description: PostgreSQL-databas för SQL-övningar.
+  license: PostgreSQL; bundled component licenses
+  source:
+    reference: docker.io/library/postgres:16-alpine3.23
+    digest: sha256:40d24790c1cc175f4245cfc730389fbc122f43d9af3f8dc2d4214902920e0899
+    version: '16'
+    documentation: https://github.com/docker-library/postgres
+  command:
+  - postgres
+  verification:
+    okd: not-verified
+  environment:
+  - POSTGRESQL_USER
+  - POSTGRESQL_PASSWORD
+  - POSTGRESQL_DATABASE
+  context: images/postgresql
+- name: python
+  version: '1.0'
+  strategy: mirror
+  test: python
+  platform: linux/amd64
+  description: Oförändrad UBI Python 3.12-runtime för egna kommandon och programmeringslabbar.
+  license: Python-2.0; bundled component licenses
+  source:
+    reference: registry.access.redhat.com/ubi9/python-312:latest
+    digest: sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f
+    version: '3.12'
+    documentation: https://github.com/sclorg/s2i-python-container
+  command:
+  - /bin/sh
+  - -c
+  - $STI_SCRIPTS_PATH/usage
+  verification:
+    okd: not-verified
+  environment: []
+  assessment: assessments/python.json
+- name: network-tools
+  version: '1.0'
+  strategy: build
+  context: images/network-tools
+  test: tools
+  platform: linux/amd64
+  description: Nätverksdiagnostik med curl, dig, ip, ping, tracepath, jq och ncat.
+  license: Various (UBI and RPM component licenses)
+  source:
+    reference: registry.access.redhat.com/ubi9/ubi:latest
+    digest: sha256:c1f105254b12a7cc676508c7e676d37125fc5c330fe2c1ce5a0cd693fa66ce8e
+    version: '9.8'
+    documentation: https://catalog.redhat.com/software/containers/ubi9/ubi/615bcf606feffc5384e8452e
+  command:
+  - /bin/bash
+  verification:
+    okd: not-verified
+  environment: []
+- name: flask-lab
+  version: '1.0'
+  strategy: build
+  context: images/flask-lab
+  test: http
+  port: 8080
+  path: /health
+  platform: linux/amd64
+  description: Flask-övningsapp med JSON-svar och health-endpoint.
+  license: BSD-3-Clause (Flask); bundled component licenses
+  source:
+    reference: registry.access.redhat.com/ubi9/python-312:latest
+    digest: sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f
+    version: '3.12'
+    documentation: https://github.com/sclorg/s2i-python-container
+  command:
+  - python3
+  - app.py
+  verification:
+    okd: not-verified
+  environment: []
+- name: mysql
+  version: '1.0'
+  strategy: build
+  test: mysql
+  port: 3306
+  platform: linux/amd64
+  description: MySQL-databas för SQL- och webblabbar.
+  license: GPL-2.0-only; bundled component licenses
+  source:
+    reference: docker.io/library/mysql:8.4
+    digest: sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b
+    version: '8.4'
+    documentation: https://github.com/docker-library/mysql
+  command:
+  - mysqld
+  - --datadir=/var/lib/mysql/data
+  - --socket=/tmp/mysql.sock
+  - --pid-file=/tmp/mysql.pid
+  verification:
+    okd: not-verified
+  environment:
+  - MYSQL_USER
+  - MYSQL_PASSWORD
+  - MYSQL_DATABASE
+  context: images/mysql
+- name: mariadb
+  version: '1.0'
+  strategy: build
+  test: mariadb
+  port: 3306
+  platform: linux/amd64
+  description: MariaDB-databas för SQL- och webblabbar.
+  license: GPL-2.0-only; bundled component licenses
+  source:
+    reference: docker.io/library/mariadb:10.11
+    digest: sha256:6c65a843396dc6c78dd0da19eccaa0a91d25d9d26a4c2afcb75010ac3f59f5ea
+    version: '10.11'
+    documentation: https://github.com/MariaDB/mariadb-docker
+  command:
+  - mariadbd
+  - --datadir=/var/lib/kurs-mariadb/data
+  - --socket=/tmp/mysql.sock
+  - --pid-file=/tmp/mysql.pid
+  verification:
+    okd: not-verified
+  environment:
+  - MYSQL_USER
+  - MYSQL_PASSWORD
+  - MYSQL_DATABASE
+  context: images/mariadb
+- name: wordpress
+  version: '1.0'
+  strategy: build
+  context: images/wordpress
+  test: wordpress
+  port: 8080
+  path: /wp-admin/install.php?step=1
+  platform: linux/amd64
+  description: WordPress med extern MySQL/MariaDB för CMS-övningar.
+  license: GPL-2.0-or-later (WordPress); bundled component licenses
+  source:
+    reference: registry.access.redhat.com/ubi9/php-83:latest
+    digest: sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987
+    version: '8.3'
+    documentation: https://github.com/sclorg/s2i-php-container
+  command:
+  - /usr/local/bin/kurs-wordpress
+  verification:
+    okd: not-verified
+  artifact:
+    url: https://wordpress.org/wordpress-6.9.10.tar.gz
+    version: 6.9.10
+    sha256: a1c0dc12e2271c6afaabf329d5af7a976f8d2c8c592773178a5baaeafc2d4f4a
+  environment:
+  - WORDPRESS_DB_HOST
+  - WORDPRESS_DB_NAME
+  - WORDPRESS_DB_USER
+  - WORDPRESS_DB_PASSWORD
+  test_database: mariadb
+- name: phpmyadmin
+  version: '1.0'
+  strategy: build
+  context: images/phpmyadmin
+  test: phpmyadmin
+  port: 8080
+  path: /
+  platform: linux/amd64
+  description: Webbgränssnitt för MySQL/MariaDB med cookie-inloggning.
+  license: GPL-2.0-or-later (phpMyAdmin); bundled component licenses
+  source:
+    reference: registry.access.redhat.com/ubi9/php-83:latest
+    digest: sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987
+    version: '8.3'
+    documentation: https://github.com/sclorg/s2i-php-container
+  command:
+  - /usr/local/bin/kurs-phpmyadmin
+  verification:
+    okd: not-verified
+  artifact:
+    url: https://files.phpmyadmin.net/phpMyAdmin/5.2.3/phpMyAdmin-5.2.3-all-languages.tar.gz
+    version: 5.2.3
+    sha256: 12ba1c425fa4071abbd4e7668c9ebdeac0b0755a467a6d6d5026122bb47c102b
+  environment:
+  - PMA_HOST
+  test_database: mariadb
+  composer:
+    version: 2.10.3
+    url: https://getcomposer.org/download/2.10.3/composer.phar
+    sha256: 7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6
+schema_version: 1

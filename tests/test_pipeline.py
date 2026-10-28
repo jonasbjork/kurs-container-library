@@ -1,4 +1,7 @@
 import argparse
+import json
+from pathlib import Path
+import tempfile
 import subprocess
 import sys
 import unittest
@@ -48,35 +51,48 @@ class PipelineTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_failure_blocks_all_pushes(self):
-        with patch.dict('os.environ', {'ALLOW_PUBLISH': 'yes'}), patch.object(library, 'run', return_value='sha256:123') as run:
-            with patch.object(library, 'test_image', side_effect=[None, RuntimeError('failed')]):
+        with patch.dict('os.environ', {'ALLOW_PUBLISH': 'yes'}), patch.object(library, 'checked_image', return_value='sha256:123'):
+            with patch.object(library, 'verify', side_effect=[{}, RuntimeError('failed')]), patch.object(library, 'run') as run:
                 with self.assertRaises(RuntimeError):
                     self.invoke(['publish'])
-            self.assertFalse(any('push' in c.args for c in run.call_args_list))
+                run.assert_not_called()
 
-    def test_publish_uses_tested_id(self):
-        with patch.dict('os.environ', {'ALLOW_PUBLISH': 'yes'}), patch.object(library, 'run', return_value='sha256:123') as run:
-            with patch.object(library, 'test_image') as test:
-                self.invoke(['publish', '--name', 'nginx', '--run-id', 'unit'])
-            test.assert_called_once_with(library.load_manifest()['images'][0], 'sha256:123')
-            self.assertEqual(run.call_args.args, ('podman', 'push', 'sha256:123', 'docker://quay.io/kurs/nginx:candidate-unit'))
+    def test_publish_uses_tested_id_and_records_registry_digest(self):
+        image = 'sha256:' + '1' * 64
+        manifest = json.dumps({'config': {'digest': image}}).encode()
+        digest = library.sha(manifest)
+        def fake_run(*args, **kwargs):
+            if args[:2] == ('podman', 'push'):
+                Path(args[3]).write_text(digest)
+            elif args[:3] == ('skopeo', 'inspect', '--raw'):
+                return manifest
+        with tempfile.TemporaryDirectory() as directory, patch.object(library, 'REPORTS', Path(directory)):
+            with patch.dict('os.environ', {'ALLOW_PUBLISH': 'yes'}), patch.object(library, 'checked_image', return_value=image):
+                with patch.object(library, 'verify', return_value={'image_id': image}) as verify, patch.object(library, 'run', side_effect=fake_run) as run:
+                    self.invoke(['publish', '--name', 'nginx', '--run-id', 'unit'])
+                    verify.assert_called_once_with(library.load_manifest()['images'][0], image)
+                    push = run.call_args_list[0].args
+                    self.assertEqual(push[-2:], (image, 'docker://quay.io/kurs/nginx:candidate-unit'))
+                    report = json.loads((Path(directory) / 'nginx/publication.json').read_text())
+                    self.assertEqual(report['published']['digest'], digest)
 
     def test_tools_failure_and_interrupt_cleanup(self):
         for error in (subprocess.CalledProcessError(1, 'podman'), KeyboardInterrupt()):
-            with patch.object(smoke, 'cmd', side_effect=error), patch.object(smoke.subprocess, 'run') as run:
+            with patch.object(smoke, 'cmd', side_effect=error), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as run:
                 with self.assertRaises(type(error)):
                     smoke.test_one(argparse.Namespace(type='tools', image='test'), '1001230000')
                 self.assertEqual(run.call_args.args[0][:4], ['podman', 'rm', '-f', '--volumes'])
                 self.assertEqual(run.call_args_list[0].args[0][1], 'logs')
 
     def test_tools_cannot_mask_failure(self):
-        with patch.object(smoke, 'cmd') as cmd, patch.object(smoke.subprocess, 'run'):
+        with patch.object(smoke, 'cmd') as cmd, patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)):
             smoke.test_one(argparse.Namespace(type='tools', image='test'), '1001230000')
         self.assertNotIn('||', cmd.call_args.args[-1])
         self.assertIn('-ec', cmd.call_args.args)
         self.assertIn('--uidmap=1001230000:0:1', cmd.call_args.args)
         self.assertIn('--gidmap=0:0:65536', cmd.call_args.args)
         self.assertIn('--passwd=false', cmd.call_args.args)
+        self.assertIn('--init', cmd.call_args.args)
         self.assertIn('--platform=linux/amd64', cmd.call_args.args)
 
     def test_mysql_and_mariadb_require_sql_result(self):
@@ -101,7 +117,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_webapp_cleanup_on_database_start_failure(self):
         for kind in ('wordpress', 'phpmyadmin'):
-            with patch.object(smoke, 'cmd', side_effect=[None, RuntimeError('db failed')]), patch.object(smoke.subprocess, 'run') as run:
+            with patch.object(smoke, 'cmd', side_effect=[None, RuntimeError('db failed')]), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as run:
                 with self.assertRaises(RuntimeError):
                     smoke.test_one(argparse.Namespace(type=kind, image='test'), '1001230000')
                 commands = [c.args[0] for c in run.call_args_list]
@@ -167,17 +183,38 @@ class PipelineTests(unittest.TestCase):
             smoke.prepare_database()
             cmd.assert_called_once_with('podman', 'image', 'exists', smoke.DATABASE_FIXTURE)
 
-    def test_missing_fixture_uses_compatible_pull(self):
-        with patch.object(smoke, 'cmd', side_effect=[subprocess.CalledProcessError(1, 'exists'), None]) as cmd:
-            smoke.prepare_database()
-            self.assertEqual(cmd.call_args.args, ('podman', 'pull', '--platform=linux/amd64', smoke.DATABASE_FIXTURE))
-            self.assertEqual(cmd.call_args.kwargs['timeout'], 600)
+    def test_missing_local_fixture_fails_without_registry_pull(self):
+        with patch.object(smoke, 'cmd', side_effect=subprocess.CalledProcessError(1, 'exists')) as cmd:
+            with self.assertRaises(subprocess.CalledProcessError): smoke.prepare_database()
+            self.assertEqual(cmd.call_count, 1)
 
     def test_fixture_inspection_error_is_not_treated_as_missing(self):
         with patch.object(smoke, 'cmd', side_effect=subprocess.CalledProcessError(125, 'exists')) as cmd:
-            with self.assertRaises(subprocess.CalledProcessError):
-                smoke.prepare_database()
+            with self.assertRaises(subprocess.CalledProcessError): smoke.prepare_database()
             self.assertEqual(cmd.call_count, 1)
+
+    def test_exited_service_fails_without_readiness_retries(self):
+        args = argparse.Namespace(type='http', image='test', port='8080', path='/')
+        with patch.object(smoke, 'cmd', side_effect=[None, '1234', 'false']), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as cleanup:
+            with patch.object(smoke.time, 'sleep') as sleep:
+                with self.assertRaisesRegex(RuntimeError, 'container exited'):
+                    smoke.test_one(args, '1001230000')
+                sleep.assert_not_called()
+            self.assertIn('--time=0', cleanup.call_args.args[0])
+
+    def test_exited_database_fixture_fails_before_sql_retry(self):
+        args = argparse.Namespace(type='wordpress', image='test', port='8080', path='/')
+        with patch.object(smoke, 'cmd', side_effect=[None, None, None, '1234', 'true', 'false']):
+            with patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)), patch.object(smoke.time, 'sleep') as sleep:
+                with self.assertRaisesRegex(RuntimeError, 'container exited'):
+                    smoke.test_one(args, '1001230000')
+                sleep.assert_not_called()
+
+    def test_cleanup_failure_blocks_successful_smoke_result(self):
+        args = argparse.Namespace(type='tools', image='test')
+        with patch.object(smoke, 'cmd'), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=1)):
+            with self.assertRaisesRegex(RuntimeError, 'cleanup failed'):
+                smoke.test_one(args, '1001230000')
 
 
 if __name__ == '__main__':

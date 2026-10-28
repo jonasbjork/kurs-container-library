@@ -1,0 +1,16 @@
+{
+  "name": "python",
+  "source": "registry.access.redhat.com/ubi9/python-312@sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+  "digest": "sha256:8cd368d763bf3903917f34f1642023e2b1d5e56e4311343453f75c5d0f50445f",
+  "image_id": "sha256:8859db5624bbfb0c7e83adc8a04f7b0ed608e196b0e269017b81775ad4a6fa40",
+  "platform": "linux/amd64",
+  "status": "pass",
+  "uids": [
+    1001230000,
+    1002340000
+  ],
+  "gid": 0,
+  "capabilities": [],
+  "no_new_privileges": true,
+  "tested_at": "2026-10-28T15:37:45.095018+00:00"
+}

@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 .env
 .auth.json
+
+reports/
+.tools/
+.cache/
+
+.venv/
