@@ -162,6 +162,23 @@ class PipelineTests(unittest.TestCase):
     def test_rootful_mapping_keeps_high_host_uid(self):
         self.assertEqual(smoke.user_namespace('1001230000', rootless=False), ['--userns=host'])
 
+    def test_cached_fixture_does_not_pull(self):
+        with patch.object(smoke, 'cmd') as cmd:
+            smoke.prepare_database()
+            cmd.assert_called_once_with('podman', 'image', 'exists', smoke.DATABASE_FIXTURE)
+
+    def test_missing_fixture_uses_compatible_pull(self):
+        with patch.object(smoke, 'cmd', side_effect=[subprocess.CalledProcessError(1, 'exists'), None]) as cmd:
+            smoke.prepare_database()
+            self.assertEqual(cmd.call_args.args, ('podman', 'pull', '--platform=linux/amd64', smoke.DATABASE_FIXTURE))
+            self.assertEqual(cmd.call_args.kwargs['timeout'], 600)
+
+    def test_fixture_inspection_error_is_not_treated_as_missing(self):
+        with patch.object(smoke, 'cmd', side_effect=subprocess.CalledProcessError(125, 'exists')) as cmd:
+            with self.assertRaises(subprocess.CalledProcessError):
+                smoke.prepare_database()
+            self.assertEqual(cmd.call_count, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

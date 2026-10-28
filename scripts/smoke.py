@@ -186,6 +186,16 @@ def test_one(a, uid):
             cleanup(['podman', 'network', 'rm', network])
 
 
+def prepare_database():
+    try:
+        cmd('podman', 'image', 'exists', DATABASE_FIXTURE)
+    except subprocess.CalledProcessError as exc:
+        if exc.returncode != 1:
+            raise
+        # Older Podman has no `pull --policy`; image exists works across versions.
+        cmd('podman', 'pull', '--platform=linux/amd64', DATABASE_FIXTURE, timeout=600)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--image', required=True)
@@ -200,7 +210,7 @@ def main():
     a.rootless = rootless == 'true'
     if a.type in ('wordpress', 'phpmyadmin'):
         # Download before creating resources; a first pull may exceed the startup command timeout.
-        cmd('podman', 'pull', '--platform=linux/amd64', '--policy=missing', DATABASE_FIXTURE, timeout=600)
+        prepare_database()
     for uid in ('1001230000', '1002340000'):
         test_one(a, uid)
 

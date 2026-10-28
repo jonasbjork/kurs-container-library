@@ -214,3 +214,7 @@ Första GitHub Actions-körningen byggde alla nio images men stoppades vid
 smoke-start av `keep-id`/GID 0 i runnerns Podman/crun. Testharnessen använder
 nu explicita rootless UID/GID-mappningar (kräver 65536 subordinate UID/GID).
 Rootful Podman behåller värdens UID/GID-namnrymd och kör med det höga UID:t.
+
+Nästa CI-körning klarade de sju första imagesens samtliga UID-prov men
+runnerns Podman saknade `pull --policy`. Fixture-hämtning använder därför
+`podman image exists` följt av vanlig `podman pull` när imagen saknas.
