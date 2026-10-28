@@ -3,12 +3,14 @@ FROM ${BASE_IMAGE}
 USER 0
 # Default and tested runtimes are non-root; remove unused privilege-switch helpers.
 RUN rm -f /usr/local/bin/gosu /usr/local/bin/su-exec
-RUN mkdir -p /var/lib/mysql /var/run/mysqld && \
-    chgrp -R 0 /var/lib/mysql /var/run/mysqld && chmod -R g=u /var/lib/mysql /var/run/mysqld
+# Keep permissions outside the inherited VOLUME: older builders discard RUN
+# changes under /var/lib/mysql. The runtime creates its own data subdirectory.
+RUN mkdir -p /var/lib/kurs-mariadb /var/run/mysqld && \
+    chgrp -R 0 /var/lib/kurs-mariadb /var/run/mysqld && chmod -R g=u /var/lib/kurs-mariadb /var/run/mysqld
 COPY start.sh /usr/local/bin/kurs-mariadb
 RUN chmod 755 /usr/local/bin/kurs-mariadb
 ENV MYSQL_ROOT_HOST=localhost MARIADB_ROOT_HOST=localhost
 USER 1001
 EXPOSE 3306
 ENTRYPOINT ["/usr/local/bin/kurs-mariadb"]
-CMD ["mariadbd", "--datadir=/var/lib/mysql/data", "--socket=/tmp/mysql.sock", "--pid-file=/tmp/mysql.pid"]
+CMD ["mariadbd", "--datadir=/var/lib/kurs-mariadb/data", "--socket=/tmp/mysql.sock", "--pid-file=/tmp/mysql.pid"]

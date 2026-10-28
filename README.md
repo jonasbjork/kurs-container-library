@@ -43,7 +43,7 @@ en tidsstämplad bedömning, inte en garanti att en image saknar sårbarheter.
 - [Uppdatera genom PR och granska lås](docs/UPDATES.md)
 - [Säkerhetspolicy, undantag, SBOM och publiceringsprovenance](docs/SECURITY.md)
 
-P1:s lokala verifiering finns i [resultatrapporten](tests/results/p1-local-2026-10-28.json): nio images, arton UID-prov, 34 regressionsprov, SBOM och noll kritiska fynd utan undantag. Lägre severity-fynd kvarstår i Trivy-rapporterna. Native amd64-CI för P1 följs i PR:n.
+P1:s lokala verifiering finns i [resultatrapporten](tests/results/p1-local-2026-10-28.json): nio images, arton UID-prov, 38 regressionsprov, SBOM och noll kritiska fynd utan undantag. Lägre severity-fynd kvarstår i Trivy-rapporterna. Native amd64-CI för P1 följs i PR:n.
 
 P1 byter databasernas CentOS Stream-baser: Trivy stöder inte deras OS-familj och
 RHEL-alternativen kräver villkorsacceptans/inloggning. De officiella baserna
@@ -242,7 +242,7 @@ MySQL kan ersätta MariaDB i exemplet. phpMyAdmin använder cookie-inloggning
 och tillåter inte tomt lösenord. Inga databaslösenord byggs in i images.
 
 Labbexemplet använder tillfällig lagring. För beständig drift behöver databasen
-lagring på `/var/lib/mysql/data` och WordPress på `/opt/app-root/src/wp-content`,
+lagring på `/var/lib/mysql/data` för MySQL, `/var/lib/kurs-mariadb/data` för MariaDB och WordPress på `/opt/app-root/src/wp-content`,
 med rättigheter för valt UID/GID. Volymmontering och återstart med beständiga
 data är inte verifierade. WordPress genererar salts vid start; ange beständiga
 `WORDPRESS_AUTH_KEY`, `WORDPRESS_SECURE_AUTH_KEY`, `WORDPRESS_LOGGED_IN_KEY`,
@@ -275,3 +275,8 @@ Rootful Podman behåller värdens UID/GID-namnrymd och kör med det höga UID:t.
 Nästa CI-körning klarade de sju första imagesens samtliga UID-prov men
 runnerns Podman saknade `pull --policy`. Fixture-hämtning använder därför
 `podman image exists` följt av vanlig `podman pull` när imagen saknas.
+
+P1-CI visade att äldre Podman/Buildah kastar bort rättighetsändringar under
+MariaDB-basens ärvda VOLUME. MariaDB använder därför `/var/lib/kurs-mariadb/data`.
+Smoke-tester kör en minimal init för signalhantering/reaping, avbryter direkt
+vid avslutad service och städar med omedelbar stop-timeout.

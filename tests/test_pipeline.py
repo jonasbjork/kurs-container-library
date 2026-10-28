@@ -78,20 +78,21 @@ class PipelineTests(unittest.TestCase):
 
     def test_tools_failure_and_interrupt_cleanup(self):
         for error in (subprocess.CalledProcessError(1, 'podman'), KeyboardInterrupt()):
-            with patch.object(smoke, 'cmd', side_effect=error), patch.object(smoke.subprocess, 'run') as run:
+            with patch.object(smoke, 'cmd', side_effect=error), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as run:
                 with self.assertRaises(type(error)):
                     smoke.test_one(argparse.Namespace(type='tools', image='test'), '1001230000')
                 self.assertEqual(run.call_args.args[0][:4], ['podman', 'rm', '-f', '--volumes'])
                 self.assertEqual(run.call_args_list[0].args[0][1], 'logs')
 
     def test_tools_cannot_mask_failure(self):
-        with patch.object(smoke, 'cmd') as cmd, patch.object(smoke.subprocess, 'run'):
+        with patch.object(smoke, 'cmd') as cmd, patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)):
             smoke.test_one(argparse.Namespace(type='tools', image='test'), '1001230000')
         self.assertNotIn('||', cmd.call_args.args[-1])
         self.assertIn('-ec', cmd.call_args.args)
         self.assertIn('--uidmap=1001230000:0:1', cmd.call_args.args)
         self.assertIn('--gidmap=0:0:65536', cmd.call_args.args)
         self.assertIn('--passwd=false', cmd.call_args.args)
+        self.assertIn('--init', cmd.call_args.args)
         self.assertIn('--platform=linux/amd64', cmd.call_args.args)
 
     def test_mysql_and_mariadb_require_sql_result(self):
@@ -116,7 +117,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_webapp_cleanup_on_database_start_failure(self):
         for kind in ('wordpress', 'phpmyadmin'):
-            with patch.object(smoke, 'cmd', side_effect=[None, RuntimeError('db failed')]), patch.object(smoke.subprocess, 'run') as run:
+            with patch.object(smoke, 'cmd', side_effect=[None, RuntimeError('db failed')]), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as run:
                 with self.assertRaises(RuntimeError):
                     smoke.test_one(argparse.Namespace(type=kind, image='test'), '1001230000')
                 commands = [c.args[0] for c in run.call_args_list]
@@ -191,6 +192,29 @@ class PipelineTests(unittest.TestCase):
         with patch.object(smoke, 'cmd', side_effect=subprocess.CalledProcessError(125, 'exists')) as cmd:
             with self.assertRaises(subprocess.CalledProcessError): smoke.prepare_database()
             self.assertEqual(cmd.call_count, 1)
+
+    def test_exited_service_fails_without_readiness_retries(self):
+        args = argparse.Namespace(type='http', image='test', port='8080', path='/')
+        with patch.object(smoke, 'cmd', side_effect=[None, '1234', 'false']), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)) as cleanup:
+            with patch.object(smoke.time, 'sleep') as sleep:
+                with self.assertRaisesRegex(RuntimeError, 'container exited'):
+                    smoke.test_one(args, '1001230000')
+                sleep.assert_not_called()
+            self.assertIn('--time=0', cleanup.call_args.args[0])
+
+    def test_exited_database_fixture_fails_before_sql_retry(self):
+        args = argparse.Namespace(type='wordpress', image='test', port='8080', path='/')
+        with patch.object(smoke, 'cmd', side_effect=[None, None, None, '1234', 'true', 'false']):
+            with patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=0)), patch.object(smoke.time, 'sleep') as sleep:
+                with self.assertRaisesRegex(RuntimeError, 'container exited'):
+                    smoke.test_one(args, '1001230000')
+                sleep.assert_not_called()
+
+    def test_cleanup_failure_blocks_successful_smoke_result(self):
+        args = argparse.Namespace(type='tools', image='test')
+        with patch.object(smoke, 'cmd'), patch.object(smoke.subprocess, 'run', return_value=argparse.Namespace(returncode=1)):
+            with self.assertRaisesRegex(RuntimeError, 'cleanup failed'):
+                smoke.test_one(args, '1001230000')
 
 
 if __name__ == '__main__':

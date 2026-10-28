@@ -330,7 +330,7 @@
       "podman_status": "podman-tested",
       "security_status": "pass",
       "okd_status": "not-verified",
-      "tested_at": "2026-10-28T15:50:01.420209+00:00",
+      "tested_at": "2026-10-28T21:47:45.361107+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -375,7 +375,7 @@
       },
       "command": [
         "mariadbd",
-        "--datadir=/var/lib/mysql/data",
+        "--datadir=/var/lib/kurs-mariadb/data",
         "--socket=/tmp/mysql.sock",
         "--pid-file=/tmp/mysql.pid"
       ],
@@ -390,11 +390,11 @@
       "context": "images/mariadb",
       "target": "quay.io/kurs/mariadb:1.0",
       "published": null,
-      "local_image_id": "sha256:3d25c4df868e0fd2b213acf1ccf4143613e69f2ea1afbd949acdb177b4dc7bf0",
+      "local_image_id": "sha256:4542a8db183229a8c3cf089b7f0bf59e360a03f8d267580b3a6cb81a44cf1e01",
       "podman_status": "podman-tested",
       "security_status": "pass",
       "okd_status": "not-verified",
-      "tested_at": "2026-10-28T15:51:06.634198+00:00",
+      "tested_at": "2026-10-28T21:49:10.279453+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -463,7 +463,7 @@
       "podman_status": "podman-tested",
       "security_status": "pass",
       "okd_status": "not-verified",
-      "tested_at": "2026-10-28T15:52:11.414497+00:00",
+      "tested_at": "2026-10-28T21:50:34.748052+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -534,7 +534,7 @@
       "podman_status": "podman-tested",
       "security_status": "pass",
       "okd_status": "not-verified",
-      "tested_at": "2026-10-28T15:53:26.519367+00:00",
+      "tested_at": "2026-10-28T21:52:13.029042+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],

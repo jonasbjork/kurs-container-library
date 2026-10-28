@@ -199,7 +199,7 @@ Docker Official Images på skanningsbara OS. CentOS Stream blockerades korrekt
 av säkerhetsgrinden. Kritiska fynd åtgärdades genom bas-/beroendeval och borttagna
 oanvända verktyg, inte undantag. phpMyAdmin har hash-låst Composer och Twig 3.30.
 
-Lokal P1-verifiering: nio byggen/mirrors, arton UID-prov, 34 regressionsprov,
+Lokal P1-verifiering: nio byggen/mirrors, arton UID-prov, 38 regressionsprov,
 Syft-SBOM och Trivy-policy med noll kritiska fynd och inga undantag. Rapport:
 `tests/results/p1-local-2026-10-28.json`. Katalog: `catalog/README.md` och
 `catalog/images.json`. CI laddar upp provenance, SBOM, CVE-rapporter och katalog

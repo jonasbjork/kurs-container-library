@@ -5,6 +5,7 @@ import http.cookiejar
 from html.parser import HTMLParser
 import signal
 import subprocess
+import sys
 import time
 import urllib.request
 import urllib.parse
@@ -96,10 +97,12 @@ def login_phpmyadmin(url):
 def cleanup(args):
     # A failed cleanup must not prevent attempts to remove the other resources.
     try:
-        subprocess.run(args, check=False, timeout=30,
-                       stdout=None if args[1] == 'logs' else subprocess.DEVNULL)
+        result = subprocess.run(args, check=False, timeout=30,
+                                stdout=None if args[1] == 'logs' else subprocess.DEVNULL)
+        return result.returncode == 0
     except (OSError, subprocess.TimeoutExpired) as exc:
         print(f'Cleanup failed: {exc}', flush=True)
+        return False
 
 
 def user_namespace(uid, rootless=True):
@@ -116,7 +119,7 @@ def test_one(a, uid):
     web = a.type in ('wordpress', 'phpmyadmin')
     database_image = getattr(a, 'database_image', DATABASE_FIXTURE)
     mapping = user_namespace(uid, getattr(a, 'rootless', True))
-    common = ['--name', name, '--platform=linux/amd64', '--pull=never',
+    common = ['--init', '--name', name, '--platform=linux/amd64', '--pull=never',
               *mapping, '--passwd=false',
               '--user', f'{uid}:0', '--cap-drop=ALL',
               '--security-opt=no-new-privileges']
@@ -134,7 +137,7 @@ def test_one(a, uid):
                 extra = MYSQL_ENV
             elif web:
                 cmd('podman', 'network', 'create', network)
-                cmd('podman', 'run', '-d', '--name', db_name, '--network', network,
+                cmd('podman', 'run', '-d', '--init', '--name', db_name, '--network', network,
                     '--network-alias', 'database', '--platform=linux/amd64', '--pull=never',
                     *mapping, '--passwd=false', '--user', f'{uid}:0',
                     '--cap-drop=ALL', '--security-opt=no-new-privileges', *MYSQL_ENV,
@@ -151,9 +154,11 @@ def test_one(a, uid):
             host_port = cmd('podman', 'port', name, f'{port}/tcp', capture=True).rsplit(':', 1)[-1]
             deadline = time.monotonic() + 120
             while True:
+                # An exited process cannot become ready; do not retry it for two minutes.
+                for service in ([name, db_name] if web else [name]):
+                    if cmd('podman', 'inspect', '--format', '{{.State.Running}}', service, capture=True) != 'true':
+                        raise RuntimeError(f'container exited: {service}')
                 try:
-                    if cmd('podman', 'inspect', '--format', '{{.State.Running}}', name, capture=True) != 'true':
-                        raise RuntimeError('container exited')
                     if a.type == 'postgres':
                         result = cmd('podman', 'exec', '-e', 'PGPASSWORD=testpass', name, 'psql',
                                      '-h', '127.0.0.1', '-U', 'kurs', '-d', 'kurs', '-v', 'ON_ERROR_STOP=1',
@@ -182,10 +187,12 @@ def test_one(a, uid):
             cleanup(['podman', 'logs', db_name])
         raise
     finally:
-        cleanup(['podman', 'rm', '-f', '--volumes', name])
+        cleaned = [cleanup(['podman', 'rm', '-f', '--volumes', '--time=0', name])]
         if web:
-            cleanup(['podman', 'rm', '-f', '--volumes', db_name])
-            cleanup(['podman', 'network', 'rm', network])
+            cleaned.append(cleanup(['podman', 'rm', '-f', '--volumes', '--time=0', db_name]))
+            cleaned.append(cleanup(['podman', 'network', 'rm', network]))
+        if not all(cleaned) and sys.exc_info()[0] is None:
+            raise RuntimeError('test resource cleanup failed')
 
 
 def prepare_database(image=DATABASE_FIXTURE):
@@ -207,7 +214,7 @@ def main():
         raise RuntimeError(f'Unexpected Podman rootless status: {rootless}')
     a.rootless = rootless == 'true'
     if a.type in ('wordpress', 'phpmyadmin'):
-        # Download before creating resources; a first pull may exceed the startup command timeout.
+        # Require the local manifest dependency before creating resources.
         prepare_database(a.database_image)
     for uid in ('1001230000', '1002340000'):
         test_one(a, uid)

@@ -142,7 +142,7 @@ images:
     documentation: https://github.com/MariaDB/mariadb-docker
   command:
   - mariadbd
-  - --datadir=/var/lib/mysql/data
+  - --datadir=/var/lib/kurs-mariadb/data
   - --socket=/tmp/mysql.sock
   - --pid-file=/tmp/mysql.pid
   verification:

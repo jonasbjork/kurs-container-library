@@ -1,10 +1,10 @@
 {
-  "recorded_at": "2026-10-28T15:55:11.424389+00:00",
+  "recorded_at": "2026-10-28T21:53:08.540902+00:00",
   "environment": "rootless Podman Linux/arm64 VM, linux/amd64 images via QEMU",
   "schema_version": 1,
   "images_passed": 9,
   "uid_tests_passed": 18,
-  "regression_tests_passed": 34,
+  "regression_tests_passed": 38,
   "critical_findings": 0,
   "exceptions": [],
   "published": false,
@@ -300,7 +300,7 @@
       "image_id": "sha256:3979b18e917ab86afdcaffc92b48cd0a357f0e15aa7ad15a8088b7ef0f145622",
       "source": "docker.io/library/mysql@sha256:5cf1e1293ea42e077e6a22114e6773b9aae3bb8f9933a2acd5a9721518ff8f5b",
       "fingerprint": "sha256:910af88d81786de1eb15730a4e072fdd3130793bbf4407831b85a922063a2901",
-      "built_at": "2026-10-28T15:49:12.691641+00:00",
+      "built_at": "2026-10-28T21:46:50.697091+00:00",
       "strategy": "build",
       "source_metadata": {
         "reference": "docker.io/library/mysql:8.4",
@@ -312,6 +312,8 @@
       "license": "GPL-2.0-only; bundled component licenses",
       "artifact": null,
       "build_tool": null,
+      "source_commit": null,
+      "ci_run_id": null,
       "smoke": "pass",
       "security": "pass",
       "okd": "not-verified",
@@ -319,8 +321,8 @@
         1001230000,
         1002340000
       ],
-      "tested_at": "2026-10-28T15:50:01.420209+00:00",
-      "audited_at": "2026-10-28T15:50:12.189861+00:00",
+      "tested_at": "2026-10-28T21:47:45.361107+00:00",
+      "audited_at": "2026-10-28T21:48:01.221169+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -348,16 +350,16 @@
       },
       "reports": {
         "policy.json": "sha256:7be32b5cfacd15a547a936b4fbd2b11e16a5db599b4f9498045db2b237f530da",
-        "sbom.cdx.json": "sha256:a6da34683f4635b9a71cec5396baf743ab26c77799a31d667b83df092e296190",
-        "trivy.json": "sha256:af23098be1f2ec8fd4d608a50a6cf3f6146001cf1968132e9f5fa899add4b163"
+        "sbom.cdx.json": "sha256:f940828b8cbb9c86f6958f4356da846000366d617b51d0f2ecd74206f5b14b27",
+        "trivy.json": "sha256:b5c26ba043078643c426412f9ce93321faf2e1139ffb5049c6d84ec72d409a48"
       }
     },
     {
       "name": "mariadb",
-      "image_id": "sha256:3d25c4df868e0fd2b213acf1ccf4143613e69f2ea1afbd949acdb177b4dc7bf0",
+      "image_id": "sha256:4542a8db183229a8c3cf089b7f0bf59e360a03f8d267580b3a6cb81a44cf1e01",
       "source": "docker.io/library/mariadb@sha256:6c65a843396dc6c78dd0da19eccaa0a91d25d9d26a4c2afcb75010ac3f59f5ea",
-      "fingerprint": "sha256:29d7b0a711f35c5a121d9f3c52a48b5cd7b9a8b9eb8349685add568da1f991b0",
-      "built_at": "2026-10-28T15:50:26.286186+00:00",
+      "fingerprint": "sha256:0c31c4c5893d8261d2591e3da72abb4c4987d4403c24308a30a5bdc85266d86a",
+      "built_at": "2026-10-28T21:48:16.506092+00:00",
       "strategy": "build",
       "source_metadata": {
         "reference": "docker.io/library/mariadb:10.11",
@@ -369,6 +371,8 @@
       "license": "GPL-2.0-only; bundled component licenses",
       "artifact": null,
       "build_tool": null,
+      "source_commit": null,
+      "ci_run_id": null,
       "smoke": "pass",
       "security": "pass",
       "okd": "not-verified",
@@ -376,8 +380,8 @@
         1001230000,
         1002340000
       ],
-      "tested_at": "2026-10-28T15:51:06.634198+00:00",
-      "audited_at": "2026-10-28T15:51:11.265030+00:00",
+      "tested_at": "2026-10-28T21:49:10.279453+00:00",
+      "audited_at": "2026-10-28T21:49:16.241838+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -405,16 +409,16 @@
       },
       "reports": {
         "policy.json": "sha256:a91bd8dbbe1e9c219e08e2a63c10384c2d2bb2960ca3dd0400f4e3d87cbe9e86",
-        "sbom.cdx.json": "sha256:e108af8d788c382bed69dc56f4b1560e1f2cb4973c8e64c1bcc55ed02cd13709",
-        "trivy.json": "sha256:3171a88e83b57a5d4fe289f6b98b01bacdf49686f893daa30bd4bd45257339cf"
+        "sbom.cdx.json": "sha256:82e7418f0f78316e3dc34f1bcc7a879330379e0767db4a1e8c1af70dfcb63c6d",
+        "trivy.json": "sha256:1d7e30d9f178992bddf42ae7e9c79473a4e75ea398fcec1834ed1617cd0e7f81"
       }
     },
     {
       "name": "wordpress",
       "image_id": "sha256:ed3c4052caea80cd4acfd452f0bda0313bc556af6c412068563f499e97ef8261",
       "source": "registry.access.redhat.com/ubi9/php-83@sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
-      "fingerprint": "sha256:3118a1b25f41053e093d9ce20d7c1870605d87e260bfe962878266b7436b0907",
-      "built_at": "2026-10-28T15:51:27.680688+00:00",
+      "fingerprint": "sha256:ef8acbbdc4ca5f4d6f3d3f91da3f8f6dc22da17fabb97ba04ed3f5ae0eea76b5",
+      "built_at": "2026-10-28T21:49:34.056176+00:00",
       "strategy": "build",
       "source_metadata": {
         "reference": "registry.access.redhat.com/ubi9/php-83:latest",
@@ -439,8 +443,8 @@
         1001230000,
         1002340000
       ],
-      "tested_at": "2026-10-28T15:52:11.414497+00:00",
-      "audited_at": "2026-10-28T15:52:25.408452+00:00",
+      "tested_at": "2026-10-28T21:50:34.748052+00:00",
+      "audited_at": "2026-10-28T21:50:52.881003+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -468,16 +472,16 @@
       },
       "reports": {
         "policy.json": "sha256:6431297fe527212f52ba607f8e198118868a696723d9e6824d410b5b84a7b960",
-        "sbom.cdx.json": "sha256:abb4a984cb628dd98fb731456d31fc92abf9d337be1d5dd284b57cf57ca1acc2",
-        "trivy.json": "sha256:5a449bc6909f6924aede89f8689a340ba3cf659e4770a89c8be3b058b12ff9aa"
+        "sbom.cdx.json": "sha256:f73aa8774cc9bcb62aeebd80dc526d58738e9856317a9ad8bb0526d40ee9b067",
+        "trivy.json": "sha256:2f218b1be537adb3d84f3a4d3d65943e507cc7f18830ef3f14532f535a863ee4"
       }
     },
     {
       "name": "phpmyadmin",
       "image_id": "sha256:bb44f9a6e76120cfedf38a7bfe4924c340fb8621b9a2ff0819e9b863aa822816",
       "source": "registry.access.redhat.com/ubi9/php-83@sha256:34adf0b75b1f4c1118c452f7415ac350929659649c370c4a47892e129ceb8987",
-      "fingerprint": "sha256:6783d00614ccd5f7d63907a54e09caf5afd81b81adf680edfa1be1704c7479ba",
-      "built_at": "2026-10-28T15:52:40.004547+00:00",
+      "fingerprint": "sha256:24370a9645b36674750c7070fdf676ddf2ca65e6a10b51e73faad9efe61f06ee",
+      "built_at": "2026-10-28T21:51:13.109937+00:00",
       "strategy": "build",
       "source_metadata": {
         "reference": "registry.access.redhat.com/ubi9/php-83:latest",
@@ -506,8 +510,8 @@
         1001230000,
         1002340000
       ],
-      "tested_at": "2026-10-28T15:53:26.519367+00:00",
-      "audited_at": "2026-10-28T15:53:39.067697+00:00",
+      "tested_at": "2026-10-28T21:52:13.029042+00:00",
+      "audited_at": "2026-10-28T21:52:30.576360+00:00",
       "policy": {
         "status": "pass",
         "blocked": [],
@@ -535,8 +539,8 @@
       },
       "reports": {
         "policy.json": "sha256:7df89e680945278dc62e7f1f6798a12dbd5ad5414fbd0a70c1f2752f88313f99",
-        "sbom.cdx.json": "sha256:f64709ae635b2459acd0f78852d0da7522ad51ebbaba6e82914a45773974e878",
-        "trivy.json": "sha256:5940b46fef33f2b364decc53e4b3aad459a9da6f64e01b401e7f380e3bb24692"
+        "sbom.cdx.json": "sha256:c1f02407396f6bc0d4cef37ce53edd6330bf47f59ec8a382c0be5014c62b4101",
+        "trivy.json": "sha256:fd044631072149f3a437b948b0729f48fd9c8baa4d57530ead9f0ab62b170a5c"
       }
     }
   ]

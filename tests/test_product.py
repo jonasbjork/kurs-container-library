@@ -61,6 +61,12 @@ class ProductTests(unittest.TestCase):
             self.assertEqual(library.source_details('registry.example.com/repo:latest')['digest'], digest)
             self.assertEqual(run.call_args_list[1].args[-1], 'docker://registry.example.com/repo@' + digest)
 
+    def test_mariadb_data_directory_is_outside_inherited_volume(self):
+        item = next(i for i in library.load_manifest()['images'] if i['name'] == 'mariadb')
+        self.assertIn('--datadir=/var/lib/kurs-mariadb/data', item['command'])
+        recipe = (library.ROOT / item['context'] / 'Containerfile').read_text()
+        self.assertIn('chgrp -R 0 /var/lib/kurs-mariadb', recipe)
+
     def test_paths_cannot_escape_repository(self):
         for path in ('../outside', '/tmp/outside', '.'):
             with self.assertRaises(ValueError): library.project_path(path)

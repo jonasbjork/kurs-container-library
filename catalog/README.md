@@ -113,11 +113,11 @@ MariaDB-databas för SQL- och webblabbar.
 - Låst digest: `sha256:6c65a843396dc6c78dd0da19eccaa0a91d25d9d26a4c2afcb75010ac3f59f5ea`
 - Plattform: `linux/amd64`
 - Licenser: GPL-2.0-only; bundled component licenses
-- Image-standardkommando: `mariadbd --datadir=/var/lib/mysql/data --socket=/tmp/mysql.sock --pid-file=/tmp/mysql.pid`
+- Image-standardkommando: `mariadbd --datadir=/var/lib/kurs-mariadb/data --socket=/tmp/mysql.sock --pid-file=/tmp/mysql.pid`
 - Lokalt startanrop: `podman run --rm --platform=linux/amd64 --cap-drop=ALL --security-opt=no-new-privileges -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_DATABASE localhost/kurs/mariadb:test`
 - Runtime-variabler (sätt i miljön före start): `MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE`
 - Databas-/appvariabler, nätverk och volymer: se [README](../README.md).
-- Testad image: `sha256:3d25c4df868e0fd2b213acf1ccf4143613e69f2ea1afbd949acdb177b4dc7bf0`
+- Testad image: `sha256:4542a8db183229a8c3cf089b7f0bf59e360a03f8d267580b3a6cb81a44cf1e01`
 - Publicerad referens: `inte publicerad`
 
 ## wordpress
